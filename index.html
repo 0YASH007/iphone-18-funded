@@ -212,13 +212,12 @@
   .backup{display:flex;gap:10px;justify-content:center;margin-top:22px}
   .ovl,#phFile{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:100px;z-index:2}
   .hero{position:relative;z-index:3}
-  .photo{display:none;position:absolute;left:50%;top:50%;width:54%;height:66%;transform:translate(-50%,-52%);border-radius:22px;overflow:hidden;
-         box-shadow:0 20px 40px rgba(0,0,0,.5),0 0 30px rgba(143,208,255,.3)}
+  .photo{display:none;position:absolute;left:50%;top:50%;width:37%;aspect-ratio:460/949;transform:translate(-50%,-53%);filter:drop-shadow(0 18px 26px rgba(0,0,0,.55))}
   .stage.has-photo .photo{display:block} .stage.has-photo .phone{display:none}
-  .photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#f5f5f7}
-  #phBase{filter:grayscale(1) brightness(.45)}
+  .photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+  #phBase{filter:grayscale(1) brightness(.42) contrast(1.1)}
   #phColor{clip-path:inset(100% 0 0 0);transition:clip-path 1.4s cubic-bezier(.2,.9,.2,1)}
-  .phline{position:absolute;left:0;right:0;height:3px;top:100%;background:linear-gradient(90deg,transparent,#bfe3ff,#fff,#bfe3ff,transparent);
+  .phline{position:absolute;left:4%;right:4%;height:3px;top:100%;background:linear-gradient(90deg,transparent,#bfe3ff,#fff,#bfe3ff,transparent);
           box-shadow:0 0 14px #8fd0ff;transition:top 1.4s cubic-bezier(.2,.9,.2,1)}
   @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -237,8 +236,8 @@
     <div class="eyebrow">Next upgrade</div>
     <h1>iPhone 18 Pro Max</h1>
     <div class="variant"><span><i class="sw"></i>Glacier Blue</span><span>256 GB</span>
-      <span class="phbtn" id="phPick">📷 Use your photo<input type="file" accept="image/*" id="phFile" aria-label="Choose a phone photo"></span>
-      <button class="phbtn" id="phRemove" hidden>✕ Remove photo</button></div>
+      <span class="phbtn" id="phPick">📷 Change photo<input type="file" accept="image/*" id="phFile" aria-label="Choose a phone photo"></span>
+      <button class="phbtn" id="phRemove" hidden>↺ Default photo</button></div>
 
     <div class="stage" id="stage">
       <svg class="ring" viewBox="0 0 300 300">
@@ -683,9 +682,12 @@
 
   // ---------- your own phone photo (kept on this device) ----------
   const PK = LS + "_photo";
+  const DEFAULT_PHOTO = "phone.webp";
   function showPhoto(url){
-    const on = !!url; $("stage").classList.toggle("has-photo", on); $("phRemove").hidden = !on; $("phPick").style.display = on ? "none" : "";
-    if (on) { $("phBase").src = url; $("phColor").src = url; }
+    const own = !!url, src = url || DEFAULT_PHOTO;
+    $("phRemove").hidden = !own; $("phPick").style.display = own ? "none" : "";
+    $("phColor").onerror = () => $("stage").classList.remove("has-photo");
+    $("phBase").src = src; $("phColor").src = src; $("stage").classList.add("has-photo");
   }
   try { showPhoto(localStorage.getItem(PK)); } catch(e){}
   $("phFile").addEventListener("change", e => {
@@ -694,8 +696,8 @@
     r.onload = () => { img.onload = () => {
       const k = Math.min(1, 700 / Math.max(img.width, img.height)), c = document.createElement("canvas");
       c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
-      const g = c.getContext("2d"); g.fillStyle = "#f5f5f7"; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
-      const url = c.toDataURL("image/jpeg", .85);
+      const g = c.getContext("2d"); g.drawImage(img, 0, 0, c.width, c.height);
+      const url = c.toDataURL("image/webp", .85);
       try { localStorage.setItem(PK, url); } catch(err){}
       showPhoto(url); render();
       toast("📷", "Photo added. It fills with colour as you save.");
