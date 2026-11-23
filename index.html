@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#040814">
+<meta name="description" content="Savings tracker for iPhone 18 Pro Max 256GB Glacier Blue with live USD to INR conversion.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+<title>iPhone 18 Pro Max Fund</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Unbounded:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#040814; --ice:#d9f0ff; --glacier:#8fd0ff; --blue:#4fa3e0; --deep:#1f5d93;
+    --text:#f1f8ff; --muted:#8ea6c0; --line:rgba(190,225,255,.13);
+    --good:#86f5cf; --bad:#ff9aa6; --gold:#ffd77a;
+    --glass:linear-gradient(160deg,rgba(255,255,255,.085),rgba(255,255,255,.02));
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;overflow-x:hidden;background:var(--bg);color:var(--text);font-family:Sora,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .num{font-family:Unbounded,Sora,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+
+  /* ---------- animated glacier backdrop ---------- */
+  .sky{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:
+    radial-gradient(120% 80% at 50% 120%,#0d2a4a 0%,transparent 60%),linear-gradient(180deg,#030611,#06101f 55%,#081a30)}
+  .blob{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55;mix-blend-mode:screen}
+  .b1{width:520px;height:520px;background:#2f8fd8;top:-180px;right:-160px;animation:drift1 18s ease-in-out infinite}
+  .b2{width:420px;height:420px;background:#6fd3ff;top:30%;left:-200px;opacity:.32;animation:drift2 22s ease-in-out infinite}
+  .b3{width:460px;height:460px;background:#4b5fd6;bottom:-220px;right:10%;opacity:.3;animation:drift1 26s ease-in-out infinite reverse}
+  @keyframes drift1{50%{transform:translate(-60px,80px) scale(1.12)}}
+  @keyframes drift2{50%{transform:translate(90px,-50px) scale(.9)}}
+  .flake{position:absolute;top:-10px;width:3px;height:3px;border-radius:50%;background:#fff;opacity:.6;animation:fall linear infinite}
+  @keyframes fall{to{transform:translate(var(--dx),110vh)}}
+
+  .wrap{position:relative;z-index:1;max-width:1020px;margin:0 auto;padding:18px 16px 70px}
+
+  /* ---------- top bar ---------- */
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:18px;
+        background:linear-gradient(135deg,#e8f7ff,#7cc4f5 60%,#2f7fc1);box-shadow:0 6px 20px rgba(79,163,224,.45)}
+  .brand small{display:block;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--glacier)}
+  .brand b{font-size:14px;font-weight:700}
+  .pill{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted);padding:7px 11px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--gold)}
+  .dot.ok{background:var(--good);box-shadow:0 0 10px var(--good);animation:blink 2.4s infinite}
+  @keyframes blink{50%{opacity:.45}}
+
+  /* ---------- hero ---------- */
+  .hero{text-align:center;padding:26px 0 8px}
+  .eyebrow{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--glacier);opacity:.9}
+  h1{margin:8px 0 4px;font-family:Unbounded,Sora,sans-serif;font-weight:800;font-size:clamp(26px,6.6vw,48px);line-height:1.05;letter-spacing:-.03em;
+     background:linear-gradient(180deg,#ffffff 10%,#bfe3ff 55%,#69b6ec);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .variant{display:inline-flex;gap:8px;margin-top:6px;flex-wrap:wrap;justify-content:center}
+  .variant span{font-size:12px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--ice)}
+  .variant .sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px;background:linear-gradient(135deg,#e3f4ff,#8fd0ff,#4fa3e0);box-shadow:0 0 8px #8fd0ff}
+
+  .stage{position:relative;width:min(320px,82vw);aspect-ratio:1;margin:22px auto 0}
+  .stage::before{content:"";position:absolute;inset:12%;border-radius:50%;background:radial-gradient(circle,rgba(143,208,255,.35),transparent 65%);filter:blur(18px);animation:breathe 4s ease-in-out infinite}
+  @keyframes breathe{50%{transform:scale(1.12);opacity:.7}}
+  .stage svg.ring{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
+  .ticks line{stroke:rgba(190,225,255,.22);stroke-width:1.5}
+  .phone{position:absolute;left:50%;top:50%;width:36%;transform:translate(-50%,-52%);filter:drop-shadow(0 22px 30px rgba(0,0,0,.55)) drop-shadow(0 0 26px rgba(143,208,255,.35));animation:float 5s ease-in-out infinite}
+  @keyframes float{50%{transform:translate(-50%,-56%) rotate(-2deg)}}
+  .badge-pct{position:absolute;left:50%;bottom:-4px;transform:translateX(-50%);padding:8px 16px;border-radius:999px;
+     background:rgba(8,20,36,.85);border:1px solid rgba(143,208,255,.45);box-shadow:0 10px 30px rgba(0,0,0,.4),0 0 20px rgba(143,208,255,.2);
+     font-size:20px;font-weight:800;white-space:nowrap}
+  .badge-pct small{font-size:12px;color:var(--muted);font-family:Sora;font-weight:500;margin-left:4px}
+  .pulse{animation:pulse .8s ease-out}
+  @keyframes pulse{35%{transform:scale(1.05)}}
+
+  .saved-big{margin-top:26px}
+  .saved-big .k{font-size:12px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase}
+  .saved-big .v{font-size:clamp(34px,9vw,54px);font-weight:800;margin-top:4px;
+     background:linear-gradient(90deg,#fff,#cfeaff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .saved-big .of{font-size:14px;color:var(--muted);margin-top:2px}
+  .saved-big .of b{color:var(--ice);font-weight:600}
+
+  /* ---------- glass cards ---------- */
+  .card{position:relative;background:var(--glass);border:1px solid var(--line);border-radius:26px;padding:20px;
+        backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 20px 60px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}
+  .card h2{margin:0 0 14px;font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .grid{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;margin-top:22px}
+  @media(min-width:820px){.grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.span2{grid-column:1/-1}}
+
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:22px}
+  @media(min-width:820px){.stats{grid-template-columns:repeat(4,1fr)}}
+  .stat{padding:15px;border-radius:20px;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);position:relative;overflow:hidden}
+  .stat::after{content:"";position:absolute;right:-30px;top:-30px;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,var(--c,rgba(143,208,255,.25)),transparent 70%)}
+  .stat .ic{font-size:18px}
+  .stat .k{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+  .stat .v{font-size:18px;font-weight:700;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .stat .s{font-size:11.5px;color:var(--muted);margin-top:3px}
+
+  /* receipt */
+  .rcpt .line{display:flex;justify-content:space-between;align-items:center;padding:10px 0;font-size:14px;border-bottom:1px dashed var(--line)}
+  .rcpt .line span:first-child{color:var(--muted)}
+  .target-box{margin-top:14px;padding:18px;border-radius:20px;position:relative;overflow:hidden;
+     background:linear-gradient(135deg,rgba(143,208,255,.22),rgba(47,127,193,.12) 60%,rgba(75,95,214,.15));border:1px solid rgba(143,208,255,.35)}
+  .target-box::before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.14) 50%,transparent 70%);transform:translateX(-100%);animation:sheen 5s ease-in-out infinite}
+  @keyframes sheen{60%,100%{transform:translateX(100%)}}
+  .target-box .k{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ice);opacity:.85}
+  .target-box .v{font-size:clamp(28px,7vw,38px);font-weight:800;margin-top:6px}
+  .target-box .r{display:flex;justify-content:space-between;gap:8px;margin-top:8px;font-size:12px;color:var(--ice);opacity:.85;flex-wrap:wrap}
+  .delta{margin-top:12px;font-size:12.5px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid var(--line);color:var(--muted)}
+  .delta b.down{color:var(--good)} .delta b.up{color:var(--bad)}
+  .spark{width:100%;height:56px;margin-top:10px;display:block}
+  .btn-s{background:rgba(143,208,255,.1);border:1px solid rgba(143,208,255,.3);color:var(--ice);border-radius:999px;padding:7px 12px;font:600 11.5px Sora,sans-serif;letter-spacing:0;text-transform:none;cursor:pointer}
+
+  /* add money */
+  .seg{display:inline-flex;padding:3px;border-radius:999px;background:rgba(0,0,0,.3);border:1px solid var(--line)}
+  .seg button{border:0;background:none;color:var(--muted);font:600 12px Sora,sans-serif;padding:7px 14px;border-radius:999px;cursor:pointer;letter-spacing:0;text-transform:none;transition:.2s}
+  .seg button.on{background:linear-gradient(135deg,#dff2ff,#8fd0ff);color:#04203a}
+  .seg button.on.neg{background:linear-gradient(135deg,#ffd6db,#ff9aa6);color:#3a0710}
+  .amt{display:flex;align-items:center;gap:6px;padding:8px 18px;border-radius:22px;background:rgba(0,0,0,.32);border:1px solid var(--line);transition:.2s}
+  .amt:focus-within{border-color:rgba(143,208,255,.6);box-shadow:0 0 0 4px rgba(143,208,255,.12)}
+  .amt span{font-size:30px;color:var(--glacier);font-weight:700}
+  .amt input{flex:1;min-width:0;width:100%;background:transparent;border:0;outline:0;color:var(--text);font:800 34px Unbounded,Sora,sans-serif;padding:8px 0;letter-spacing:-.02em}
+  .amt input::placeholder{color:rgba(255,255,255,.18)}
+  .quick{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:12px}
+  .quick button{border:1px solid var(--line);background:rgba(255,255,255,.045);color:var(--ice);border-radius:14px;padding:11px 0;font:600 12.5px Sora,sans-serif;cursor:pointer;transition:.15s}
+  .quick button:hover{border-color:rgba(143,208,255,.5);background:rgba(143,208,255,.1)}
+  .quick button:active{transform:scale(.93)}
+  .note{width:100%;margin-top:12px;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:16px;color:var(--text);padding:13px 14px;font:400 14px Sora,sans-serif;outline:0}
+  .note:focus{border-color:rgba(143,208,255,.5)}
+  .save{position:relative;overflow:hidden;width:100%;margin-top:14px;border:0;border-radius:20px;padding:17px;font:800 16px Sora,sans-serif;color:#04203a;cursor:pointer;
+     background:linear-gradient(135deg,#f0faff,#a6dbff 40%,#5fb1ea);box-shadow:0 14px 34px rgba(79,163,224,.45),inset 0 1px 0 #fff;transition:transform .12s}
+  .save::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.7) 50%,transparent 65%);transform:translateX(-120%);animation:sheen 3.2s ease-in-out infinite}
+  .save:active{transform:scale(.975)}
+  .save:disabled{opacity:.55}
+  .save.neg{background:linear-gradient(135deg,#ffe3e6,#ff9aa6);color:#3a0710;box-shadow:0 14px 34px rgba(255,120,140,.3)}
+  .hint{font-size:12.5px;color:var(--muted);margin-top:12px;min-height:18px;text-align:center}
+  .hint b{color:var(--ice)}
+
+  /* milestone track */
+  .track{position:relative;display:flex;justify-content:space-between;padding:4px 2px 0}
+  .track .rail{position:absolute;left:22px;right:22px;top:25px;height:4px;border-radius:4px;background:rgba(255,255,255,.08)}
+  .track .fill{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:linear-gradient(90deg,#8fd0ff,#dff2ff);box-shadow:0 0 12px rgba(143,208,255,.7);transition:width 1.2s cubic-bezier(.2,.9,.2,1);width:0}
+  .node{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:6px;width:44px}
+  .node .o{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:19px;background:#0b1828;border:1px solid var(--line);filter:grayscale(1);opacity:.55;transition:.4s}
+  .node.on .o{filter:none;opacity:1;border-color:rgba(143,208,255,.7);background:radial-gradient(circle at 30% 30%,#1d4a74,#0b1d33);box-shadow:0 0 18px rgba(143,208,255,.45)}
+  .node small{font-size:10.5px;color:var(--muted);font-weight:600}
+  .node.on small{color:var(--ice)}
+  @media(max-width:420px){.node{width:38px}.node .o{width:38px;height:38px;font-size:16px}.track .rail{top:22px;left:19px;right:19px}}
+
+  /* history */
+  .list{display:flex;flex-direction:column;gap:8px;max-height:380px;overflow:auto;margin-top:4px}
+  .item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:18px;background:rgba(255,255,255,.035);border:1px solid var(--line);animation:slidein .4s ease-out}
+  @keyframes slidein{from{opacity:0;transform:translateY(-6px)}}
+  .item .av{width:38px;height:38px;flex:0 0 auto;border-radius:12px;display:grid;place-items:center;font-size:16px;background:rgba(134,245,207,.12);border:1px solid rgba(134,245,207,.25)}
+  .item .av.neg{background:rgba(255,154,166,.1);border-color:rgba(255,154,166,.25)}
+  .item .m{flex:1;min-width:0}
+  .item .m b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .item .m span{font-size:11.5px;color:var(--muted)}
+  .item .a{font-weight:700;font-size:14px;color:var(--good);white-space:nowrap}
+  .item .a.neg{color:var(--bad)}
+  .x{background:none;border:0;color:var(--muted);font:600 12px Sora;cursor:pointer;padding:6px 8px;border-radius:10px}
+  .x:hover,.x[data-armed="1"]{color:var(--bad);background:rgba(255,154,166,.1)}
+  .empty{text-align:center;color:var(--muted);font-size:13px;padding:26px 8px}
+  .empty div{font-size:34px;margin-bottom:8px}
+
+  /* effects & overlays */
+  #fx{position:fixed;inset:0;pointer-events:none;z-index:50}
+  .floatnum{position:fixed;z-index:60;font:800 36px Unbounded,Sora;color:var(--good);text-shadow:0 0 24px rgba(134,245,207,.7);pointer-events:none;animation:rise 1.7s ease-out forwards}
+  @keyframes rise{0%{opacity:0;transform:translate(-50%,10px) scale(.6)}15%{opacity:1;transform:translate(-50%,-14px) scale(1.18)}100%{opacity:0;transform:translate(-50%,-160px) scale(1)}}
+  .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(160%);z-index:70;width:min(92vw,460px);
+     background:rgba(10,22,38,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(143,208,255,.35);border-radius:20px;padding:14px 16px;font-size:14px;line-height:1.45;
+     box-shadow:0 24px 60px rgba(0,0,0,.55);transition:transform .5s cubic-bezier(.2,1.35,.4,1);display:flex;gap:12px;align-items:center}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+  .toast .e{font-size:26px}
+  .toast b{color:var(--ice)}
+  .overlay{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(2,6,14,.75);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+  .overlay.show{display:flex;animation:fade .3s}
+  @keyframes fade{from{opacity:0}}
+  .modal{width:min(360px,100%);text-align:center;padding:30px 24px 24px;border-radius:30px;background:linear-gradient(165deg,#13304f,#081424 70%);border:1px solid rgba(143,208,255,.4);
+     box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 60px rgba(143,208,255,.15);animation:pop .6s cubic-bezier(.2,1.6,.4,1)}
+  @keyframes pop{from{transform:scale(.55);opacity:0}}
+  .modal .emo{font-size:70px;line-height:1;filter:drop-shadow(0 8px 20px rgba(143,208,255,.5));animation:bob 2s ease-in-out infinite}
+  @keyframes bob{50%{transform:translateY(-6px) rotate(6deg)}}
+  .modal h3{margin:14px 0 6px;font:800 24px Unbounded,Sora;letter-spacing:-.02em}
+  .modal p{margin:0 0 18px;color:var(--muted);font-size:14px;line-height:1.5}
+  .modal input{width:100%;margin:0 0 14px;background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:16px;color:var(--text);padding:14px;font:800 24px Unbounded,Sora;text-align:center;outline:0}
+  .row{display:flex;gap:10px}.row>*{flex:1}
+  .ghost{background:transparent;border:1px solid var(--line);color:var(--text);border-radius:20px;padding:15px;font:600 14px Sora;cursor:pointer;margin-top:14px}
+  footer{margin-top:26px;font-size:11.5px;color:var(--muted);text-align:center;line-height:1.7;opacity:.8}
+
+  /* highlight cards */
+  .hl{display:grid;grid-template-columns:1fr;gap:12px;margin-top:24px}
+  @media(min-width:560px){.hl{grid-template-columns:1fr 1fr}}
+  .hcard{position:relative;border-radius:24px;padding:18px 18px 16px;overflow:hidden;isolation:isolate}
+  .hcard::before{content:"";position:absolute;inset:-60%;z-index:-2;background:conic-gradient(from 0deg,var(--a),transparent 25%,var(--b) 50%,transparent 75%,var(--a));animation:spin 6s linear infinite}
+  .hcard::after{content:"";position:absolute;inset:2px;z-index:-1;border-radius:22px;background:var(--fill)}
+  @keyframes spin{to{transform:rotate(1turn)}}
+  .hcard.left{--a:#ff9aa6;--b:#ffd77a;--fill:linear-gradient(150deg,#2a1220,#140b16 70%);box-shadow:0 14px 40px rgba(255,120,140,.22)}
+  .hcard.rate{--a:#8fd0ff;--b:#86f5cf;--fill:linear-gradient(150deg,#0e2a46,#08162a 70%);box-shadow:0 14px 40px rgba(79,163,224,.28)}
+  .hk{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+  .left .hk{color:#ffc2ca} .rate .hk{color:#bfe3ff}
+  .hv{font-size:clamp(32px,9vw,42px);font-weight:800;margin-top:8px;line-height:1.05}
+  .left .hv{background:linear-gradient(90deg,#fff,#ffc9a0);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
+  .rate .hv{background:linear-gradient(90deg,#fff,#9fe0ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hs{margin-top:8px;font-size:12.5px;color:rgba(235,245,255,.75);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .chg{font-weight:700;padding:3px 8px;border-radius:999px;font-size:11.5px}
+  .chg.down{color:#062b1e;background:var(--good)} .chg.up{color:#3a0710;background:var(--bad)}
+  .pace{display:flex;align-items:center;gap:12px;margin-top:12px;padding:14px 16px;border-radius:20px;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+  .pace .pi{font-size:22px}
+  .pace .pk{font-size:11px;color:var(--muted);letter-spacing:.06em}
+  .pace .pv{font-size:17px;font-weight:700;margin-top:2px}
+  .pace .pr{margin-left:auto;text-align:right;font-size:11.5px;color:var(--muted);line-height:1.6}
+  .phone{width:40%!important}
+
+  .phbtn{position:relative;overflow:hidden;font:600 12px Sora,sans-serif;padding:6px 12px;border-radius:999px;border:1px dashed rgba(143,208,255,.5);background:rgba(143,208,255,.08);color:var(--ice);cursor:pointer}
+  .backup{display:flex;gap:10px;justify-content:center;margin-top:22px}
+  .ovl,#phFile{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:100px;z-index:2}
+  .hero{position:relative;z-index:3}
+  .photo{display:none;position:absolute;left:50%;top:50%;width:54%;height:66%;transform:translate(-50%,-52%);border-radius:22px;overflow:hidden;
+         box-shadow:0 20px 40px rgba(0,0,0,.5),0 0 30px rgba(143,208,255,.3)}
+  .stage.has-photo .photo{display:block} .stage.has-photo .phone{display:none}
+  .photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#f5f5f7}
+  #phBase{filter:grayscale(1) brightness(.45)}
+  #phColor{clip-path:inset(100% 0 0 0);transition:clip-path 1.4s cubic-bezier(.2,.9,.2,1)}
+  .phline{position:absolute;left:0;right:0;height:3px;top:100%;background:linear-gradient(90deg,transparent,#bfe3ff,#fff,#bfe3ff,transparent);
+          box-shadow:0 0 14px #8fd0ff;transition:top 1.4s cubic-bezier(.2,.9,.2,1)}
+</style>
+</head>
+<body>
+<div class="sky" id="sky"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
+<canvas id="fx"></canvas>
+
+<div class="wrap">
+  <div class="top">
+    <div class="brand"><div class="logo">💎</div><div><small>Savings goal</small><b>Phone Fund</b></div></div>
+    <div class="pill"><i class="dot" id="syncDot"></i><span id="syncTxt">Connecting…</span></div>
+  </div>
+
+  <section class="hero">
+    <div class="eyebrow">Next upgrade</div>
+    <h1>iPhone 18 Pro Max</h1>
+    <div class="variant"><span><i class="sw"></i>Glacier Blue</span><span>256 GB</span>
+      <span class="phbtn" id="phPick">📷 Use your photo<input type="file" accept="image/*" id="phFile" aria-label="Choose a phone photo"></span>
+      <button class="phbtn" id="phRemove" hidden>✕ Remove photo</button></div>
+
+    <div class="stage" id="stage">
+      <svg class="ring" viewBox="0 0 300 300">
+        <defs>
+          <linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#9fd8ff"/><stop offset="1" stop-color="#3d8fd0"/>
+          </linearGradient>
+          <filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <g class="ticks" id="ticks"></g>
+        <circle cx="150" cy="150" r="128" fill="none" stroke="rgba(190,225,255,.08)" stroke-width="16"/>
+        <circle id="ring" cx="150" cy="150" r="128" fill="none" stroke="url(#rg)" stroke-width="16" stroke-linecap="round" filter="url(#glow)"
+                stroke-dasharray="804.25" stroke-dashoffset="804.25" style="transition:stroke-dashoffset 1.4s cubic-bezier(.2,.9,.2,1)"/>
+        <circle id="knob" r="7" fill="#fff" filter="url(#glow)" cx="278" cy="150" style="opacity:0"/>
+      </svg>
+
+      <!-- phone that fills with ice as you save (generic illustration) -->
+      <svg class="phone" viewBox="-5 -2 110 204" aria-hidden="true">
+        <defs>
+          <clipPath id="pclip"><rect x="3" y="3" width="94" height="194" rx="19"/></clipPath>
+          <linearGradient id="frame" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#f4fbff"/><stop offset=".25" stop-color="#9fb8cc"/><stop offset=".5" stop-color="#e6f2fb"/><stop offset=".75" stop-color="#7f98ad"/><stop offset="1" stop-color="#dcebf6"/>
+          </linearGradient>
+          <linearGradient id="empty" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a3d52"/><stop offset=".6" stop-color="#162433"/><stop offset="1" stop-color="#0f1925"/></linearGradient>
+          <linearGradient id="liq" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e3f1fb"/><stop offset=".45" stop-color="#b3d3ea"/><stop offset="1" stop-color="#86afd0"/></linearGradient>
+          <linearGradient id="island" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="rgba(255,255,255,.55)"/><stop offset=".5" stop-color="rgba(200,225,245,.25)"/><stop offset="1" stop-color="rgba(120,160,195,.35)"/></linearGradient>
+          <radialGradient id="lensGlass" cx=".38" cy=".35" r=".75"><stop offset="0" stop-color="#3b4f7a"/><stop offset=".35" stop-color="#141b2e"/><stop offset=".8" stop-color="#05070d"/><stop offset="1" stop-color="#000"/></radialGradient>
+          <radialGradient id="lensTint" cx=".6" cy=".65" r=".5"><stop offset="0" stop-color="#7a5cff" stop-opacity=".55"/><stop offset="1" stop-color="#2a8cff" stop-opacity="0"/></radialGradient>
+          <linearGradient id="ringMetal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fafdff"/><stop offset=".5" stop-color="#8ea6ba"/><stop offset="1" stop-color="#e2eef8"/></linearGradient>
+          <linearGradient id="gl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+          <linearGradient id="refl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".4" stop-color="#fff" stop-opacity="0"/></linearGradient>
+          <filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1.5" stdDeviation="1.4" flood-color="#000" flood-opacity=".45"/></filter>
+          <g id="lens">
+            <circle r="9.6" fill="url(#ringMetal)" filter="url(#sh)"/>
+            <circle r="8.3" fill="#0a0f18"/>
+            <circle r="7" fill="url(#lensGlass)"/>
+            <circle r="7" fill="url(#lensTint)"/>
+            <circle r="4.2" fill="none" stroke="rgba(120,140,200,.35)" stroke-width=".6"/>
+            <circle r="2.1" fill="#04060b"/>
+            <ellipse cx="-2.6" cy="-2.8" rx="2.2" ry="1.3" fill="#fff" opacity=".55" transform="rotate(-35 -2.6 -2.8)"/>
+            <circle cx="2.8" cy="3" r=".8" fill="#fff" opacity=".3"/>
+          </g>
+        </defs>
+        <!-- side buttons -->
+        <rect x="-2.2" y="46" width="3" height="11" rx="1.4" fill="url(#frame)"/>
+        <rect x="-2.2" y="62" width="3" height="18" rx="1.4" fill="url(#frame)"/>
+        <rect x="-2.2" y="84" width="3" height="18" rx="1.4" fill="url(#frame)"/>
+        <rect x="99.2" y="66" width="3" height="28" rx="1.4" fill="url(#frame)"/>
+        <rect x="99.2" y="124" width="3" height="16" rx="1.4" fill="url(#frame)"/>
+        <!-- metal frame -->
+        <rect x="0" y="0" width="100" height="200" rx="22" fill="url(#frame)"/>
+        <g clip-path="url(#pclip)">
+          <rect x="0" y="0" width="100" height="200" fill="url(#empty)"/>
+          <g id="liquid" transform="translate(0,200)" style="transition:transform 1.4s cubic-bezier(.2,.9,.2,1)">
+            <path fill="url(#liq)" d="M-100 6 Q-75 0 -50 6 T0 6 T50 6 T100 6 T150 6 T200 6 V260 H-100 Z">
+              <animateTransform attributeName="transform" type="translate" from="0 0" to="100 0" dur="3s" repeatCount="indefinite"/>
+            </path>
+            <path fill="rgba(255,255,255,.35)" d="M-100 4 Q-80 9 -60 4 T-20 4 T20 4 T60 4 T100 4 T140 4 T180 4 V14 H-100 Z">
+              <animateTransform attributeName="transform" type="translate" from="0 0" to="80 0" dur="2.2s" repeatCount="indefinite"/>
+            </path>
+          </g>
+          <rect x="0" y="0" width="100" height="200" fill="url(#refl)"/>
+          <rect x="-40" y="0" width="30" height="200" fill="url(#gl)" transform="skewX(-18)">
+            <animate attributeName="x" from="-80" to="170" dur="4.5s" repeatCount="indefinite"/>
+          </rect>
+        </g>
+        <rect x="3" y="3" width="94" height="194" rx="19" fill="none" stroke="rgba(0,0,0,.35)" stroke-width=".8"/>
+        <!-- camera island -->
+        <rect x="9" y="9" width="30" height="74" rx="14" fill="rgba(10,20,32,.35)" filter="url(#sh)"/>
+        <rect x="9" y="9" width="30" height="74" rx="14" fill="url(#island)" stroke="rgba(255,255,255,.55)" stroke-width=".7"/>
+        <use href="#lens" x="24" y="25"/>
+        <use href="#lens" x="24" y="46"/>
+        <use href="#lens" x="24" y="67"/>
+        <circle cx="48" cy="18" r="3.4" fill="#f6f1e4" stroke="#b9c8d6" stroke-width=".8"/>
+        <circle cx="48" cy="18" r="1.6" fill="#fff8dc"/>
+        <circle cx="48" cy="28" r="2" fill="#0b1018" stroke="#9fb3c5" stroke-width=".6"/>
+        <circle cx="48" cy="35.5" r="1" fill="#0b1018"/>
+      </svg>
+
+      <div class="photo" id="photo">
+        <img id="phBase" alt="">
+        <img id="phColor" alt="">
+        <div class="phline" id="phLine"></div>
+      </div>
+      <div class="badge-pct num"><span id="pct">0%</span><small>funded</small></div>
+    </div>
+
+    <div class="saved-big">
+      <div class="k">Saved so far</div>
+      <div class="v num" id="sSaved">₹0</div>
+      <div class="of">of <b class="num" id="target">₹—</b> · <span id="sSavedUsd">$0</span></div>
+    </div>
+  </section>
+
+  <div class="hl">
+    <div class="hcard left">
+      <div class="hk">🎯 Still needed</div>
+      <div class="hv num" id="sLeft">₹0</div>
+      <div class="hs"><span id="sLeftUsd">$0</span> · <span id="sLeftPct">100%</span> of the goal left</div>
+    </div>
+    <div class="hcard rate">
+      <div class="hk">💱 1 USD = INR today</div>
+      <div class="hv num" id="sRate">₹—</div>
+      <div class="hs"><span id="sRateChg"></span><span id="sRateDate">—</span></div>
+    </div>
+  </div>
+  <div class="pace">
+    <div class="pi">📅</div>
+    <div><div class="pk">At this pace you'll get it by</div><div class="pv" id="sEta">—</div></div>
+    <div class="pr"><div id="sAvg">need 2+ deposits</div><div id="sDeposits">0 deposits</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Add money
+        <span class="seg"><button class="on" id="modeAdd">Save</button><button id="modeTake">Withdraw</button></span>
+      </h2>
+      <div class="amt"><span>₹</span><input id="amount" inputmode="numeric" placeholder="0" autocomplete="off"></div>
+      <div class="quick">
+        <button data-v="100">+100</button><button data-v="500">+500</button><button data-v="1000">+1K</button><button data-v="2000">+2K</button><button data-v="5000">+5K</button>
+      </div>
+      <input class="note" id="note" placeholder="What's it from? (skipped Swiggy, bonus…)" maxlength="60">
+      <button class="save" id="saveBtn">Save it 💙</button>
+      <div class="hint" id="hint"></div>
+    </div>
+
+    <div class="card rcpt">
+      <h2>Price breakdown <button class="btn-s" id="editRate">✎ Edit rate</button></h2>
+      <div class="line"><span>iPhone 18 Pro Max 256 GB</span><span class="num">$1,299.00</span></div>
+      <div class="line"><span>Tax (9%)</span><span class="num">$116.91</span></div>
+      <div class="line" style="border:0"><span>Total</span><span class="num"><b>$1,415.91</b></span></div>
+      <div class="target-box">
+        <div class="k">Target in rupees today</div>
+        <div class="v num" id="target2">₹—</div>
+        <div class="r"><span id="rateTxt">1 USD = ₹—</span><span id="rateDate">—</span></div>
+      </div>
+      <div class="delta" id="delta"></div>
+      <svg class="spark" id="spark" viewBox="0 0 300 56" preserveAspectRatio="none"></svg>
+    </div>
+
+    <div class="card span2">
+      <h2>Milestones <button class="btn-s" id="soundBtn">🔊 Sound on</button></h2>
+      <div class="track" id="track"><div class="rail"><div class="fill" id="trackFill"></div></div></div>
+    </div>
+
+    <div class="card span2">
+      <h2>History <span id="histCount" style="letter-spacing:0;text-transform:none"></span></h2>
+      <div class="list" id="list"></div>
+    </div>
+  </div>
+
+  <div class="backup">
+    <button class="phbtn" id="bkExport">💾 Backup</button>
+    <span class="phbtn">📂 Restore<input type="file" accept="application/json,.json" id="bkFile" class="ovl" aria-label="Restore backup"></span>
+  </div>
+  <footer>Target = $1,299 × 1.09 = $1,415.91, converted at the latest USD→INR rate (fetched live when you open the page).<br>Your bank or card may add a markup — tap “Edit rate” to use its exact rate.</footer>
+</div>
+
+<div class="overlay" id="mileOv"><div class="modal">
+  <div class="emo" id="mEmo">🎉</div><h3 id="mTitle">Milestone!</h3><p id="mText"></p>
+  <button class="save" id="mClose">Keep going</button>
+</div></div>
+
+<div class="overlay" id="rateOv"><div class="modal">
+  <div class="emo">💱</div><h3>USD → INR rate</h3><p>Use your bank or card's rate for an exact target.</p>
+  <input id="rateInput" inputmode="decimal">
+  <div class="row"><button class="ghost" id="rateCancel">Cancel</button><button class="save" id="rateSave">Save</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const USD_TOTAL = 1415.91;
+  const FALLBACK_RATE = { usdInr: 93.03, date: "2026-11-23", source: "built-in" };
+  const MILESTONES = [
+    { p: 1,   e: "🌱", t: "First step",     m: "The fund is officially alive." },
+    { p: 10,  e: "🔋", t: "10% charged",    m: "Battery's at 10%. Keep it plugged in." },
+    { p: 25,  e: "📸", t: "Quarter way",    m: "That's roughly the camera paid off." },
+    { p: 50,  e: "⚡", t: "Halfway there",  m: "Half the phone is already yours." },
+    { p: 75,  e: "🧊", t: "75% — so close", m: "Glacier Blue is getting very real." },
+    { p: 90,  e: "🚀", t: "Final stretch",  m: "Under 10% to go. Start picking a case." },
+    { p: 100, e: "🏆", t: "Goal reached!",  m: "You did it. Go get your iPhone 18 Pro Max." }
+  ];
+  const CHEERS = [["✨","Nice! Every rupee counts."],["🙌","Future-you says thanks."],["💪","That's how it's done."],["🧊","Glacier Blue just got closer."],
+                  ["😎","Discipline looks good on you."],["📈","Stacking it up!"],["💙","Small wins, big phone."],["⚡","Charging the fund…"]];
+
+  const $ = id => document.getElementById(id);
+  const inr = n => "₹" + Math.round(n).toLocaleString("en-IN");
+  const usd = n => "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const dayKey = ts => { const d = new Date(ts); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); };
+  const fmtDate = s => { const d = new Date(s + "T12:00:00"); return isNaN(d) ? s : d.toLocaleDateString("en-IN", { day: "numeric", month: "short" }); };
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+
+  let state = { deposits: [], rate: FALLBACK_RATE, rates: [] };
+  let db = null, mode = "local", sign = 1, soundOn = true;
+
+  // ---------- backdrop ----------
+  (function flakes(){ const sky = $("sky"); for (let i = 0; i < 26; i++) { const f = document.createElement("i"); f.className = "flake";
+    const s = 1 + Math.random() * 2.5; f.style.cssText = `left:${Math.random()*100}%;width:${s}px;height:${s}px;opacity:${.2+Math.random()*.5};--dx:${(Math.random()-.5)*120}px;animation-duration:${12+Math.random()*16}s;animation-delay:${-Math.random()*20}s`;
+    sky.appendChild(f); } })();
+  (function ticks(){ let h = ""; for (let i = 0; i < 60; i++) { const a = i / 60 * Math.PI * 2, r1 = 146, r2 = i % 5 ? 150 : 154;
+    h += `<line x1="${150 + Math.cos(a) * r1}" y1="${150 + Math.sin(a) * r1}" x2="${150 + Math.cos(a) * r2}" y2="${150 + Math.sin(a) * r2}"/>`; } $("ticks").innerHTML = h; })();
+  $("track").insertAdjacentHTML("beforeend", MILESTONES.map((m, i) => `<div class="node" id="n${i}"><div class="o">${m.e}</div><small>${m.p}%</small></div>`).join(""));
+
+  // ---------- storage ----------
+  const LS = "iphone18fund_v1";
+  function lsLoad(){ try { const s = JSON.parse(localStorage.getItem(LS) || "null"); if (s) { state.deposits = s.deposits || []; if (s.rate) state.rate = s.rate; if (s.rates) state.rates = s.rates; } } catch(e){} }
+  function lsSave(){ try { localStorage.setItem(LS, JSON.stringify({ deposits: state.deposits, rate: state.rate, rates: state.rates })); } catch(e){} }
+  try { soundOn = localStorage.getItem(LS + "_sound") !== "off"; } catch(e){}
+  function setSync(ok, txt){ $("syncDot").className = "dot" + (ok ? " ok" : ""); $("syncTxt").textContent = txt; }
+
+  async function initDb(){
+    const timer = setTimeout(() => { if (mode !== "db") setSync(false, "This device only"); }, 10000);
+    try { db = window.claude && window.claude.use ? await window.claude.use("db") : null; } catch(e){ db = null; }
+    if (!db) { clearTimeout(timer); setSync(false, "Saved on this device"); fetchLiveRate(); return; }
+    db.collection("deposits").orderBy("ts", "desc").onSnapshot(snap => {
+      state.deposits = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (!snap.metadata.fromCache) { clearTimeout(timer); mode = "db"; setSync(true, "Synced"); }
+      render();
+    }, () => { clearTimeout(timer); mode = "local"; setSync(false, "This device only"); });
+    db.doc("meta/rate").onSnapshot(s => {
+      if (s.exists) { const d = s.data(); if (d && +d.usdInr > 0) { state.rate = { usdInr: +d.usdInr, date: d.date || "", source: d.source || "" }; render(); } }
+    }, () => {});
+    db.collection("rates").orderBy("date", "asc").limit(120).onSnapshot(snap => {
+      state.rates = snap.docs.map(d => d.data()).filter(r => +r.usdInr > 0); render();
+    }, () => {});
+  }
+
+  // ---------- count-up numbers ----------
+  const shown = {};
+  function countTo(id, val, fmt){
+    const el = $(id), from = shown[id] ?? 0; shown[id] = val;
+    if (from === val) { el.textContent = fmt(val); return; }
+    const t0 = performance.now(), dur = 1100;
+    (function step(t){ const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      el.textContent = fmt(from + (val - from) * e); if (k < 1) requestAnimationFrame(step); })(t0);
+  }
+
+  // ---------- render ----------
+  const target = () => USD_TOTAL * state.rate.usdInr;
+  const saved = () => state.deposits.reduce((a, d) => a + (+d.amount || 0), 0);
+  function render(){
+    const T = target(), S = Math.max(0, saved()), L = Math.max(0, T - S);
+    const pct = Math.min(100, T ? S / T * 100 : 0);
+    countTo("sSaved", S, inr); countTo("sLeft", L, v => L > 0 ? inr(v) : "Done 🎉");
+    $("target").textContent = inr(T); $("target2").textContent = inr(T);
+    $("sSavedUsd").textContent = "≈ " + usd(S / state.rate.usdInr);
+    $("sLeftUsd").textContent = "≈ " + usd(L / state.rate.usdInr);
+    $("sLeftPct").textContent = (100 - pct).toFixed(pct > 0 && pct < 100 ? 1 : 0) + "%";
+    const rr = state.rates, prevR = rr.length >= 2 ? rr[rr.length - 2] : null;
+    if (prevR) { const dch = state.rate.usdInr - prevR.usdInr;
+      $("sRateChg").innerHTML = Math.abs(dch) < .005 ? "" : `<span class="chg ${dch < 0 ? "down" : "up"}">${dch < 0 ? "▼" : "▲"} ₹${Math.abs(dch).toFixed(2)}</span>`; }
+    countTo("pct", pct, v => (v >= 10 || v === 0 ? Math.floor(v) : v.toFixed(1)) + "%");
+
+    // ring + knob + liquid
+    $("ring").style.strokeDashoffset = 804.25 * (1 - pct / 100);
+    const a = pct / 100 * Math.PI * 2, kn = $("knob");
+    kn.setAttribute("cx", 150 + Math.cos(a) * 128); kn.setAttribute("cy", 150 + Math.sin(a) * 128); kn.style.opacity = pct > 0 ? 1 : 0;
+    $("phColor").style.clipPath = `inset(${100 - pct}% 0 0 0)`; $("phLine").style.top = `calc(${100 - pct}% - 1px)`; $("phLine").style.opacity = pct > 0 && pct < 100 ? 1 : 0;
+    $("liquid").setAttribute("transform", `translate(0,${200 - pct / 100 * 196 - (pct > 0 ? 4 : 0)})`);
+
+    // rate
+    $("sRate").textContent = "₹" + state.rate.usdInr.toFixed(2);
+    $("sRateDate").textContent = state.rate.date ? fmtDate(state.rate.date) + (state.rate.source === "manual" ? " · your rate" : " · updates daily") : "";
+    $("rateTxt").textContent = "1 USD = ₹" + state.rate.usdInr.toFixed(2);
+    $("rateDate").textContent = state.rate.date ? "Updated " + fmtDate(state.rate.date) : "";
+
+    // streak / eta
+    const pos = state.deposits.filter(d => d.amount > 0);
+    $("sDeposits").textContent = pos.length + (pos.length === 1 ? " deposit" : " deposits");
+    if (L <= 0 && S > 0) { $("sEta").textContent = "Buy it! 🛍️"; $("sAvg").textContent = "Goal complete"; }
+    else if (pos.length >= 2) {
+      const first = Math.min(...pos.map(d => d.ts)), days = Math.max(1, (Date.now() - first) / 864e5), perDay = S / days, need = Math.ceil(L / perDay);
+      $("sEta").textContent = need > 3650 ? "Speed up 😅" : new Date(Date.now() + need * 864e5).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "2-digit" });
+      $("sAvg").textContent = "≈ " + inr(perDay) + " / day";
+    } else { $("sEta").textContent = "—"; $("sAvg").textContent = "need 2+ deposits"; }
+
+    // milestones
+    let reached = -1; MILESTONES.forEach((m, i) => { const on = pct >= m.p; $("n" + i).classList.toggle("on", on); if (on) reached = i; });
+    let w = 0; if (reached >= 0) { const nx = MILESTONES[reached + 1];
+      w = reached / (MILESTONES.length - 1) + (nx ? (pct - MILESTONES[reached].p) / (nx.p - MILESTONES[reached].p) / (MILESTONES.length - 1) : 0); }
+    $("trackFill").style.width = Math.min(100, w * 100) + "%";
+
+    renderDelta(T); renderSpark(); renderList();
+  }
+
+  function renderDelta(T){
+    const r = state.rates, el = $("delta");
+    if (r.length >= 2) {
+      const prev = r[r.length - 2], diff = T - USD_TOTAL * prev.usdInr;
+      if (Math.abs(diff) >= 1) { el.innerHTML = diff < 0
+        ? `📉 <b class="down">${inr(-diff)} cheaper</b> than ${fmtDate(prev.date)} — the rupee got stronger.`
+        : `📈 <b class="up">${inr(diff)} costlier</b> than ${fmtDate(prev.date)} — the dollar got stronger.`; return; }
+      el.textContent = `➖ Same target as ${fmtDate(prev.date)}.`; return;
+    }
+    el.textContent = "Daily rate history builds up here.";
+  }
+
+  function renderSpark(){
+    const svg = $("spark"), r = state.rates;
+    if (r.length < 2) { svg.innerHTML = ""; return; }
+    const vals = r.map(x => +x.usdInr), mn = Math.min(...vals), mx = Math.max(...vals), span = (mx - mn) || 1;
+    const pts = vals.map((v, i) => [i / (vals.length - 1) * 292 + 4, 50 - (v - mn) / span * 40]);
+    const d = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" "), last = pts[pts.length - 1];
+    svg.innerHTML = `<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd0ff" stop-opacity=".35"/><stop offset="1" stop-color="#8fd0ff" stop-opacity="0"/></linearGradient></defs>
+      <path d="${d} L296 56 L4 56 Z" fill="url(#sg)"/><path d="${d}" fill="none" stroke="#bfe3ff" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+      <circle cx="${last[0]}" cy="${last[1]}" r="4" fill="#fff"><animate attributeName="r" values="3;6;3" dur="2s" repeatCount="indefinite"/></circle>`;
+  }
+
+  function renderList(){
+    const items = [...state.deposits].sort((a, b) => b.ts - a.ts);
+    $("histCount").textContent = items.length ? items.length + (items.length === 1 ? " entry" : " entries") : "";
+    if (!items.length) { $("list").innerHTML = `<div class="empty"><div>🐷</div>No savings yet — your first deposit starts the countdown.</div>`; return; }
+    $("list").innerHTML = items.map(d => { const neg = d.amount < 0, dt = new Date(d.ts);
+      const when = dt.toLocaleDateString("en-IN", { day: "numeric", month: "short" }) + " · " + dt.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });
+      return `<div class="item"><div class="av ${neg ? "neg" : ""}">${neg ? "↘" : "💰"}</div>
+        <div class="m"><b>${esc(d.note || (neg ? "Withdrawal" : "Saved"))}</b><span>${when}</span></div>
+        <div class="a num ${neg ? "neg" : ""}">${neg ? "−" : "+"}${inr(Math.abs(d.amount))}</div>
+        <button class="x" data-id="${esc(d.id)}" title="Remove">✕</button></div>`; }).join("");
+  }
+
+  // ---------- actions ----------
+  const amountEl = $("amount");
+  amountEl.addEventListener("input", () => { amountEl.value = amountEl.value.replace(/[^\d]/g, "").slice(0, 8); hint(); });
+  document.querySelectorAll(".quick button").forEach(b => b.addEventListener("click", () => {
+    amountEl.value = String((parseInt(amountEl.value || "0", 10) || 0) + +b.dataset.v); hint(); tick(); }));
+  function setMode(s){ sign = s; $("modeAdd").classList.toggle("on", s > 0); $("modeTake").classList.toggle("on", s < 0); $("modeTake").classList.toggle("neg", s < 0);
+    $("saveBtn").classList.toggle("neg", s < 0); $("saveBtn").textContent = s > 0 ? "Save it 💙" : "Withdraw"; hint(); }
+  $("modeAdd").onclick = () => setMode(1); $("modeTake").onclick = () => setMode(-1);
+
+  function hint(){
+    const v = parseInt(amountEl.value || "0", 10), T = target(), L = Math.max(0, T - saved());
+    if (!v) { $("hint").innerHTML = L > 0 ? `<b>${inr(L)}</b> to go. You've got this.` : "Goal complete! 🏆"; return; }
+    if (sign < 0) { $("hint").innerHTML = `Sets the goal back by <b>${(v / T * 100).toFixed(1)}%</b>.`; return; }
+    $("hint").innerHTML = v >= L ? "This one finishes the goal! 🏁" : `+<b>${(v / T * 100).toFixed(1)}%</b> · ${Math.ceil(L / v)} more like this and it's yours.`;
+  }
+
+  $("saveBtn").addEventListener("click", async () => {
+    const v = parseInt(amountEl.value || "0", 10);
+    if (!v || v <= 0) { shake(amountEl.parentElement); return; }
+    const entry = { amount: sign * v, note: $("note").value.trim().slice(0, 60), ts: Date.now() };
+    const T0 = target(), before = Math.max(0, saved());
+    const pB = before / T0 * 100, pA = Math.max(0, before + sign * v) / T0 * 100;
+    const crossed = sign > 0 ? MILESTONES.filter(m => pB < m.p && pA >= m.p).pop() : null;
+    $("saveBtn").disabled = true;
+    try { if (mode === "db" && db) await db.collection("deposits").add(entry); else { entry.id = "l" + entry.ts; state.deposits.push(entry); lsSave(); } }
+    catch (e) { entry.id = "l" + entry.ts; state.deposits.push(entry); lsSave(); mode = "local"; setSync(false, "This device only"); }
+    $("saveBtn").disabled = false; amountEl.value = ""; $("note").value = "";
+    if (sign > 0) celebrate(before, v, T0); else toast("🫶", `Withdrew <b>${inr(v)}</b>. No stress — top it back up soon.`);
+    if (crossed) setTimeout(() => milestone(crossed, Math.max(0, T0 - before - v)), 1000);
+    render(); hint();
+  });
+
+  $("list").addEventListener("click", async e => {
+    const b = e.target.closest(".x"); if (!b) return; const id = b.dataset.id;
+    if (b.dataset.armed !== "1") { b.dataset.armed = "1"; b.textContent = "Delete?"; setTimeout(() => { b.dataset.armed = ""; b.textContent = "✕"; }, 2500); return; }
+    if (mode === "db" && db && !id.startsWith("l")) { try { await db.doc("deposits/" + id).delete(); } catch(e){} }
+    else { state.deposits = state.deposits.filter(d => d.id !== id); lsSave(); render(); }
+  });
+
+  $("soundBtn").onclick = () => { soundOn = !soundOn; $("soundBtn").textContent = soundOn ? "🔊 Sound on" : "🔈 Sound off"; try { localStorage.setItem(LS + "_sound", soundOn ? "on" : "off"); } catch(e){} };
+  $("soundBtn").textContent = soundOn ? "🔊 Sound on" : "🔈 Sound off";
+
+  $("editRate").onclick = () => { $("rateInput").value = state.rate.usdInr.toFixed(2); $("rateOv").classList.add("show"); setTimeout(() => $("rateInput").focus(), 60); };
+  $("rateCancel").onclick = () => $("rateOv").classList.remove("show");
+  $("rateSave").onclick = async () => {
+    const r = parseFloat($("rateInput").value); if (!(r > 40 && r < 200)) { shake($("rateInput")); return; }
+    state.rate = { usdInr: r, date: dayKey(Date.now()), source: "manual" }; $("rateOv").classList.remove("show");
+    if (mode === "db" && db) { try { await db.doc("meta/rate").set(state.rate); } catch(e){} } else lsSave();
+    render(); toast("💱", `Rate set to <b>₹${r.toFixed(2)}</b>. New target: <b>${inr(target())}</b>.`);
+  };
+  $("mClose").onclick = () => $("mileOv").classList.remove("show");
+  function shake(el){ el.animate([{transform:"translateX(0)"},{transform:"translateX(-9px)"},{transform:"translateX(9px)"},{transform:"translateX(-4px)"},{transform:"translateX(0)"}], { duration: 340 }); }
+
+  // ---------- effects ----------
+  let tt;
+  function toast(e, html){ const t = $("toast"); t.innerHTML = `<div class="e">${e}</div><div>${html}</div>`; t.classList.add("show"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("show"), 4000); }
+
+  function celebrate(before, v, T){
+    const L = Math.max(0, T - before - v), btn = $("saveBtn").getBoundingClientRect();
+    const f = document.createElement("div"); f.className = "floatnum"; f.textContent = "+" + inr(v);
+    f.style.left = (btn.left + btn.width / 2) + "px"; f.style.top = (btn.top - 10) + "px"; document.body.appendChild(f); setTimeout(() => f.remove(), 1800);
+    burst(btn.left + btn.width / 2, btn.top, Math.min(180, 60 + v / 40));
+    const st = $("stage").getBoundingClientRect(); setTimeout(() => sparkle(st.left + st.width / 2, st.top + st.height / 2, st.width / 2.3), 350);
+    const s = $("stage"); s.classList.remove("pulse"); void s.offsetWidth; s.classList.add("pulse");
+    chime(v); try { navigator.vibrate && navigator.vibrate([18, 40, 18]); } catch(e){}
+    const [e, c] = CHEERS[Math.floor(Math.random() * CHEERS.length)];
+    toast(L > 0 ? e : "🏁", L > 0 ? `${c}<br><b>+${inr(v)}</b> saved · only <b>${inr(L)}</b> to go` : `<b>That's the whole phone!</b>`);
+  }
+
+  function milestone(m, L){
+    $("mEmo").textContent = m.e; $("mTitle").textContent = m.t; $("mText").textContent = m.m + (L > 0 ? ` ${inr(L)} left.` : "");
+    $("mileOv").classList.add("show");
+    for (let i = 0; i < (m.p === 100 ? 8 : 4); i++) setTimeout(() => burst(innerWidth * (.15 + Math.random() * .7), innerHeight * (.25 + Math.random() * .2), 150), i * 260);
+    fanfare();
+  }
+
+  // confetti + sparkles
+  const cv = $("fx"), cx = cv.getContext("2d"); let parts = [], raf = null;
+  function size(){ cv.width = innerWidth * devicePixelRatio; cv.height = innerHeight * devicePixelRatio; cx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0); }
+  size(); addEventListener("resize", size);
+  const COLORS = ["#ffffff", "#e6f6ff", "#bfe3ff", "#8fd0ff", "#4fa3e0", "#86f5cf", "#c9d6e3"];
+  function burst(x, y, n){
+    for (let i = 0; i < n; i++) { const a = -Math.PI / 2 + (Math.random() - .5) * Math.PI * 1.4, sp = 5 + Math.random() * 10;
+      parts.push({ k: Math.random() < .2 ? "coin" : Math.random() < .5 ? "rect" : "circ", x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, g: .22 + Math.random() * .12,
+        r: 3 + Math.random() * 5, c: COLORS[(Math.random() * COLORS.length) | 0], rot: Math.random() * 6, vr: (Math.random() - .5) * .4, life: 1, decay: .006 }); }
+    if (!raf) raf = requestAnimationFrame(loop);
+  }
+  function sparkle(x, y, R){
+    for (let i = 0; i < 40; i++) { const a = Math.random() * Math.PI * 2, r = R * (.7 + Math.random() * .4);
+      parts.push({ k: "star", x: x + Math.cos(a) * r, y: y + Math.sin(a) * r, vx: Math.cos(a) * .6, vy: Math.sin(a) * .6 - .3, g: 0, r: 2 + Math.random() * 4, c: "#fff", rot: 0, vr: .1, life: 1, decay: .018 }); }
+    if (!raf) raf = requestAnimationFrame(loop);
+  }
+  function loop(){
+    cx.clearRect(0, 0, innerWidth, innerHeight);
+    parts = parts.filter(p => p.life > 0 && p.y < innerHeight + 40);
+    for (const p of parts) {
+      p.vy += p.g; p.vx *= .985; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.life -= p.decay;
+      cx.save(); cx.globalAlpha = Math.max(0, Math.min(1, p.life * 1.6)); cx.translate(p.x, p.y); cx.rotate(p.rot);
+      if (p.k === "coin") { const sx = Math.abs(Math.cos(p.rot * 2)); cx.fillStyle = "#ffd36b"; cx.beginPath(); cx.ellipse(0, 0, p.r * 1.4 * sx + .6, p.r * 1.4, 0, 0, 7); cx.fill();
+        if (sx > .5) { cx.fillStyle = "#a7770a"; cx.font = `bold ${p.r * 1.7}px Sora`; cx.textAlign = "center"; cx.textBaseline = "middle"; cx.fillText("₹", 0, 1); } }
+      else if (p.k === "star") { cx.fillStyle = p.c; cx.shadowColor = "#8fd0ff"; cx.shadowBlur = 10; cx.beginPath();
+        for (let j = 0; j < 4; j++) { const a = j * Math.PI / 2; cx.lineTo(Math.cos(a) * p.r * 2, Math.sin(a) * p.r * 2); cx.lineTo(Math.cos(a + Math.PI / 4) * p.r * .5, Math.sin(a + Math.PI / 4) * p.r * .5); } cx.fill(); }
+      else if (p.k === "circ") { cx.fillStyle = p.c; cx.beginPath(); cx.arc(0, 0, p.r * .7, 0, 7); cx.fill(); }
+      else { cx.fillStyle = p.c; cx.fillRect(-p.r, -p.r / 2.5, p.r * 2, p.r / 1.25); }
+      cx.restore();
+    }
+    raf = parts.length ? requestAnimationFrame(loop) : null; if (!raf) cx.clearRect(0, 0, innerWidth, innerHeight);
+  }
+
+  // sound
+  let ac = null;
+  function audio(){ if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){} } return ac; }
+  function tone(f, t0, dur, vol, type){ const a = audio(); if (!a) return; const o = a.createOscillator(), g = a.createGain(); o.type = type || "sine"; o.frequency.value = f;
+    g.gain.setValueAtTime(0, a.currentTime + t0); g.gain.linearRampToValueAtTime(vol, a.currentTime + t0 + .01); g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + t0 + dur);
+    o.connect(g).connect(a.destination); o.start(a.currentTime + t0); o.stop(a.currentTime + t0 + dur + .05); }
+  function tick(){ if (soundOn) try { tone(1400, 0, .06, .05, "sine"); } catch(e){} }
+  function chime(v){ if (!soundOn) return; try { (v >= 5000 ? [784, 988, 1175, 1568] : v >= 1000 ? [784, 988, 1319] : [880, 1319]).forEach((f, i) => tone(f, i * .08, .55, .12, "triangle")); } catch(e){} }
+  function fanfare(){ if (!soundOn) return; try { [523, 659, 784, 1047, 784, 1047].forEach((f, i) => tone(f, i * .12, .45, .12, "triangle")); } catch(e){} }
+
+
+  // ---------- your own phone photo (kept on this device) ----------
+  const PK = LS + "_photo";
+  function showPhoto(url){
+    const on = !!url; $("stage").classList.toggle("has-photo", on); $("phRemove").hidden = !on; $("phPick").style.display = on ? "none" : "";
+    if (on) { $("phBase").src = url; $("phColor").src = url; }
+  }
+  try { showPhoto(localStorage.getItem(PK)); } catch(e){}
+  $("phFile").addEventListener("change", e => {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    const img = new Image(), r = new FileReader();
+    r.onload = () => { img.onload = () => {
+      const k = Math.min(1, 700 / Math.max(img.width, img.height)), c = document.createElement("canvas");
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      const g = c.getContext("2d"); g.fillStyle = "#f5f5f7"; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+      const url = c.toDataURL("image/jpeg", .85);
+      try { localStorage.setItem(PK, url); } catch(err){}
+      showPhoto(url); render();
+      toast("📷", "Photo added. It fills with colour as you save.");
+    }; img.src = r.result; };
+    r.readAsDataURL(f); e.target.value = "";
+  });
+  $("phRemove").onclick = () => { try { localStorage.removeItem(PK); } catch(e){} showPhoto(null); };
+
+
+  // ---------- live USD→INR rate (works when hosted, e.g. GitHub Pages) ----------
+  async function getJSON(url){ const c = new AbortController(); const t = setTimeout(() => c.abort(), 8000);
+    try { const r = await fetch(url, { signal: c.signal, cache: "no-store" }); if (!r.ok) throw 0; return await r.json(); } finally { clearTimeout(t); } }
+  async function fetchLiveRate(){
+    const today = dayKey(Date.now());
+    if (state.rate.source === "manual" && state.rate.date === today) return;   // respect today's manual rate
+    let rate = null, source = "";
+    try { const j = await getJSON("https://open.er-api.com/v6/latest/USD"); if (j && j.rates && +j.rates.INR > 0) { rate = +j.rates.INR; source = "ExchangeRate-API"; } } catch(e){}
+    if (!rate) try { const j = await getJSON("https://api.frankfurter.app/latest?from=USD&to=INR"); if (j && j.rates && +j.rates.INR > 0) { rate = +j.rates.INR; source = "ECB via Frankfurter"; } } catch(e){}
+    if (!rate) { setSync(false, "Offline · last saved rate"); return; }
+    rate = Math.round(rate * 100) / 100;
+    const changed = rate !== state.rate.usdInr;
+    state.rate = { usdInr: rate, date: today, source };
+    state.rates = (state.rates || []).filter(r => r.date !== today).concat([{ usdInr: rate, date: today }]).sort((a, b) => a.date < b.date ? -1 : 1).slice(-120);
+    lsSave(); render(); hint(); setSync(true, "Live rate · " + source);
+    if (changed) toast("💱", `Live rate updated: <b>1 USD = ₹${rate.toFixed(2)}</b>. Target: <b>${inr(target())}</b>.`);
+  }
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && mode !== "db") fetchLiveRate(); });
+
+  // ---------- backup / restore (data lives in this browser) ----------
+  $("bkExport").onclick = () => {
+    const blob = new Blob([JSON.stringify({ app: "iphone18fund", v: 1, deposits: state.deposits, rate: state.rate, rates: state.rates }, null, 2)], { type: "application/json" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "iphone-fund-backup-" + dayKey(Date.now()) + ".json";
+    document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    toast("💾", "Backup downloaded. Keep it safe!");
+  };
+  $("bkFile").addEventListener("change", e => {
+    const f = e.target.files && e.target.files[0]; if (!f) return; const r = new FileReader();
+    r.onload = () => { try { const j = JSON.parse(r.result); if (!Array.isArray(j.deposits)) throw 0;
+        state.deposits = j.deposits.filter(d => typeof d.amount === "number" && d.ts).map(d => ({ ...d, id: d.id || "l" + d.ts }));
+        if (j.rates) state.rates = j.rates; lsSave(); render(); hint(); toast("✅", `Restored <b>${state.deposits.length}</b> entries.`);
+      } catch(err){ toast("⚠️", "That file isn't a valid backup."); } };
+    r.readAsText(f); e.target.value = "";
+  });
+
+  // ---------- boot ----------
+  lsLoad(); render(); hint(); initDb();
+})();
+</script>
+</body>
+</html>
