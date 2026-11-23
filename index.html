@@ -257,6 +257,16 @@
   .bump{animation:bump .5s cubic-bezier(.2,1.6,.4,1)}
   @keyframes bump{40%{transform:scale(1.08)}}
   @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+
+  .mcrow{display:flex;align-items:center;gap:8px;margin-top:12px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
+  .mck{font-size:12px;font-weight:700;color:#ffd9a8}
+  .mcrow b{font-size:18px;color:#fff;margin-left:auto}
+  .mcd{font-size:11px;color:rgba(235,245,255,.6)}
+  .basis{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:-2px 0 10px;font-size:12px;color:var(--muted)}
+  .cmp{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .cmp>div{padding:11px 12px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+  .cmp span{font-size:11px;color:var(--muted)} .cmp b{font-size:16px}
+  .cmp small{grid-column:1/-1;font-size:11.5px;color:var(--muted);text-align:center}
 </style>
 </head>
 <body>
@@ -380,6 +390,7 @@
       <div class="hk">💱 1 USD = INR today <span class="live"><i></i>LIVE</span></div>
       <div class="hv num" id="sRate">₹—</div>
       <div class="hs"><span id="sRateChg"></span><span id="sRateDate">—</span></div>
+      <div class="mcrow"><span class="mck">💳 Mastercard</span><b class="num" id="mcRate">₹—</b><span class="mcd" id="mcDate"></span></div>
     </div>
   </div>
   <div class="reveal pace">
@@ -404,6 +415,7 @@
 
     <div class="reveal card rcpt">
       <h2>Price breakdown <button class="btn-s" id="editRate">✎ Edit rate</button></h2>
+      <div class="basis"><span>Target uses</span><span class="seg"><button id="bMarket" class="on">Market rate</button><button id="bMc">💳 Mastercard</button></span></div>
       <div class="line"><span>iPhone 18 Pro Max 256 GB</span><span class="num">$1,299.00</span></div>
       <div class="line"><span>Tax (9%)</span><span class="num">$116.91</span></div>
       <div class="line" style="border:0"><span>Total</span><span class="num"><b>$1,415.91</b></span></div>
@@ -411,6 +423,11 @@
         <div class="k">Target in rupees today</div>
         <div class="v num" id="target2">₹—</div>
         <div class="r"><span id="rateTxt">1 USD = ₹—</span><span id="rateDate">—</span></div>
+      </div>
+      <div class="cmp">
+        <div><span>📈 Market rate</span><b class="num" id="tMarket">₹—</b></div>
+        <div><span>💳 Mastercard rate</span><b class="num" id="tMc">₹—</b></div>
+        <small id="tDiff"></small>
       </div>
       <div class="delta" id="delta"></div>
       <svg class="spark" id="spark" viewBox="0 0 300 56" preserveAspectRatio="none"></svg>
@@ -516,15 +533,18 @@
   }
 
   // ---------- render ----------
-  const target = () => USD_TOTAL * state.rate.usdInr;
+  let MC = { usdInr: 92.71, date: "2026-11-22" }, basis = "market";
+  try { const m = JSON.parse(localStorage.getItem(LS + "_mc") || "null"); if (m && +m.usdInr > 0) MC = m; basis = localStorage.getItem(LS + "_basis") || "market"; } catch(e){}
+  const effRate = () => basis === "mc" ? MC.usdInr : state.rate.usdInr;
+  const target = () => USD_TOTAL * effRate();
   const saved = () => state.deposits.reduce((a, d) => a + (+d.amount || 0), 0);
   function render(){
     const T = target(), S = Math.max(0, saved()), L = Math.max(0, T - S);
     const pct = Math.min(100, T ? S / T * 100 : 0);
     countTo("sSaved", S, inr); countTo("sLeft", L, v => L > 0 ? inr(v) : "Done 🎉");
     $("target").textContent = inr(T); $("target2").textContent = inr(T);
-    $("sSavedUsd").textContent = "≈ " + usd(S / state.rate.usdInr);
-    $("sLeftUsd").textContent = "≈ " + usd(L / state.rate.usdInr);
+    $("sSavedUsd").textContent = "≈ " + usd(S / effRate());
+    $("sLeftUsd").textContent = "≈ " + usd(L / effRate());
     $("sLeftPct").textContent = (100 - pct).toFixed(pct > 0 && pct < 100 ? 1 : 0) + "%";
     const rr = state.rates, prevR = rr.length >= 2 ? rr[rr.length - 2] : null;
     if (prevR) { const dch = state.rate.usdInr - prevR.usdInr;
@@ -542,8 +562,13 @@
     // rate
     $("sRate").textContent = "₹" + state.rate.usdInr.toFixed(2);
     $("sRateDate").textContent = state.rate.date ? fmtDate(state.rate.date) + (state.rate.source === "manual" ? " · your rate" : " · updates daily") : "";
-    $("rateTxt").textContent = "1 USD = ₹" + state.rate.usdInr.toFixed(2);
-    $("rateDate").textContent = state.rate.date ? "Updated " + fmtDate(state.rate.date) : "";
+    $("rateTxt").textContent = (basis === "mc" ? "💳 Mastercard · " : "") + "1 USD = ₹" + effRate().toFixed(2);
+    $("mcRate").textContent = "₹" + MC.usdInr.toFixed(2); $("mcDate").textContent = MC.date ? fmtDate(MC.date) : "";
+    const tM = USD_TOTAL * state.rate.usdInr, tC = USD_TOTAL * MC.usdInr, df = tC - tM;
+    $("tMarket").textContent = inr(tM); $("tMc").textContent = inr(tC);
+    $("tDiff").textContent = Math.abs(df) < 1 ? "Both rates give the same target." : `Mastercard is ${inr(Math.abs(df))} ${df > 0 ? "costlier" : "cheaper"} than the market rate · bank forex markup not included`;
+    $("bMarket").classList.toggle("on", basis !== "mc"); $("bMc").classList.toggle("on", basis === "mc");
+    $("rateDate").textContent = basis === "mc" ? (MC.date ? "Rate of " + fmtDate(MC.date) : "") : (state.rate.date ? "Updated " + fmtDate(state.rate.date) : "");
 
     // streak / eta
     const pos = state.deposits.filter(d => d.amount > 0);
@@ -812,6 +837,19 @@
     if (getComputedStyle(b).position === "static") b.style.position = "relative"; b.style.overflow = "hidden";
     b.appendChild(sp); setTimeout(() => sp.remove(), 650); });
   function bump(id){ const el = $(id); if (!el) return; el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
+
+
+  // ---------- Mastercard rate ----------
+  function setBasis(b){ basis = b; try { localStorage.setItem(LS + "_basis", b); } catch(e){} render(); hint();
+    toast(b === "mc" ? "💳" : "📈", `Target now uses the <b>${b === "mc" ? "Mastercard" : "market"}</b> rate: <b>${inr(target())}</b>.`); }
+  $("bMarket").onclick = () => setBasis("market"); $("bMc").onclick = () => setBasis("mc");
+  function setMC(m){ if (!m || !(+m.usdInr > 0)) return; MC = { usdInr: +(+m.usdInr).toFixed(2), date: m.date || "" }; try { localStorage.setItem(LS + "_mc", JSON.stringify(MC)); } catch(e){} render(); hint(); }
+  async function fetchMastercard(){
+    try { const j = await getJSON("https://www.mastercard.com/marketingservices/public/mccom-services/currency-conversions/conversion-rates?exchange_date=0000-00-00&transaction_currency=USD&cardholder_billing_currency=INR&bank_fee=0&transaction_amount=1");
+      if (j && +j.conversionRate > 0) return setMC({ usdInr: +j.conversionRate, date: j.fxDate }); } catch(e){}
+    try { const j = await getJSON("mastercard.json?t=" + Date.now()); if (j) setMC(j); } catch(e){}
+  }
+  fetchMastercard();
 
   // ---------- boot ----------
   lsLoad(); render(); hint(); initDb();

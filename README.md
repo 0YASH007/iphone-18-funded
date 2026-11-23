@@ -9,6 +9,7 @@ A savings tracker for my next phone: **iPhone 18 Pro Max · 256 GB · Glacier Bl
 ## Features
 
 - **Live exchange rate.** Each time the page opens, it fetches the USD → INR rate from [ExchangeRate-API](https://www.exchangerate-api.com/), with the ECB rate via [Frankfurter](https://www.frankfurter.app/) as a backup, and recalculates the ₹ target.
+- **Mastercard rate.** Shown next to the market rate, with the target at both rates and a switch to set the target to either. `mastercard.json` is refreshed daily.
 - **Rate history.** A sparkline of past rates, plus "₹X cheaper/costlier than last time" with ▲/▼ badges.
 - **Highlighted cards** for *Still needed* and *1 USD = INR today*.
 - **Progress ring and phone fill.** The drawn phone fills with glacier-blue liquid as you save. Or tap **📷 Use your photo** and your own phone picture fills with colour from the bottom up.
