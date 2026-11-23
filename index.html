@@ -220,6 +220,43 @@
   .phline{position:absolute;left:4%;right:4%;height:3px;top:100%;background:linear-gradient(90deg,transparent,#bfe3ff,#fff,#bfe3ff,transparent);
           box-shadow:0 0 14px #8fd0ff;transition:top 1.4s cubic-bezier(.2,.9,.2,1)}
   @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+  /* ---------- effects (transform/opacity only) ---------- */
+  .sky::after{content:"";position:absolute;top:-20%;left:-60%;width:80%;height:140%;will-change:transform;
+     background:linear-gradient(100deg,transparent 20%,rgba(143,208,255,.07) 45%,rgba(134,245,207,.05) 55%,transparent 80%);transform:translateX(0) rotate(8deg);animation:aurora 14s ease-in-out infinite}
+  @keyframes aurora{50%{transform:translateX(190%) rotate(8deg)}}
+  .photo{animation:hover 6s ease-in-out infinite;will-change:transform}
+  @keyframes hover{0%,100%{transform:translate(-50%,-53%)}50%{transform:translate(-50%,-56%)}}
+  .tilt{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform;transition:transform .25s ease-out}
+  .tilt.idle{animation:sway 7s ease-in-out infinite}
+  @keyframes sway{0%,100%{transform:perspective(900px) rotateY(-7deg) rotateX(3deg)}50%{transform:perspective(900px) rotateY(7deg) rotateX(-2deg)}}
+  .glare{position:absolute;inset:0;border-radius:13%/6.5%;overflow:hidden;pointer-events:none;mix-blend-mode:normal}
+  .glare::before{content:"";position:absolute;inset:-40%;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.28) 50%,transparent 60%);
+     transform:translate(var(--gx,0%),var(--gy,0%));transition:transform .25s ease-out;will-change:transform}
+  .tilt.idle .glare::before{animation:glare 7s ease-in-out infinite}
+  @keyframes glare{0%,100%{transform:translate(-18%,0)}50%{transform:translate(18%,0)}}
+  .bubbles{position:absolute;left:4%;right:4%;bottom:1%;height:0;overflow:hidden;border-radius:0 0 13% 13%/0 0 6.5% 6.5%;transition:height 1.4s cubic-bezier(.2,.9,.2,1)}
+  .bubbles i{position:absolute;bottom:-10px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff,rgba(255,255,255,.25) 60%,transparent 70%);
+     opacity:0;will-change:transform,opacity;animation:bub var(--d) ease-in infinite;animation-delay:var(--dl)}
+  @keyframes bub{0%{transform:translate(0,0) scale(.6);opacity:0}15%{opacity:.9}100%{transform:translate(var(--sx),calc(var(--h,200px) * -1)) scale(1);opacity:0}}
+  .phline{animation:linepulse 2.2s ease-in-out infinite}
+  @keyframes linepulse{50%{opacity:.45}}
+  .orbit{transform-box:view-box;transform-origin:150px 150px;animation:orbit 9s linear infinite;will-change:transform}
+  @keyframes orbit{to{transform:rotate(360deg)}}
+  .ticks{transform-box:view-box;transform-origin:150px 150px;animation:orbit 90s linear infinite reverse}
+  .live{display:inline-flex;align-items:center;gap:5px;margin-left:8px;padding:2px 8px;border-radius:999px;font-size:10px;letter-spacing:.1em;color:#062b1e;background:var(--good)}
+  .live i{width:6px;height:6px;border-radius:50%;background:#062b1e;animation:blink 1.2s infinite}
+  .saved-big .v{background-size:220% 100%;background-image:linear-gradient(90deg,#fff 0%,#cfeaff 35%,#ffffff 50%,#9fd8ff 65%,#fff 100%);animation:textshine 6s linear infinite}
+  @keyframes textshine{to{background-position:-220% 0}}
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.9,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+  .ripple{position:absolute;border-radius:50%;pointer-events:none;background:rgba(255,255,255,.55);transform:scale(0);animation:rip .6s ease-out forwards}
+  @keyframes rip{to{transform:scale(1);opacity:0}}
+  .quick button{position:relative;overflow:hidden}
+  .hcard .hv{display:inline-block}
+  .bump{animation:bump .5s cubic-bezier(.2,1.6,.4,1)}
+  @keyframes bump{40%{transform:scale(1.08)}}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
 </style>
 </head>
 <body>
@@ -251,6 +288,7 @@
         <circle cx="150" cy="150" r="128" fill="none" stroke="rgba(190,225,255,.08)" stroke-width="16"/>
         <circle id="ring" cx="150" cy="150" r="128" fill="none" stroke="url(#rg)" stroke-width="16" stroke-linecap="round" filter="url(#glow)"
                 stroke-dasharray="804.25" stroke-dashoffset="804.25" style="transition:stroke-dashoffset 1.4s cubic-bezier(.2,.9,.2,1)"/>
+        <g class="orbit"><circle cx="278" cy="150" r="3.2" fill="#e6f6ff"/><circle cx="278" cy="150" r="9" fill="rgba(143,208,255,.18)"/></g>
         <circle id="knob" r="7" fill="#fff" filter="url(#glow)" cx="278" cy="150" style="opacity:0"/>
       </svg>
 
@@ -315,11 +353,13 @@
         <circle cx="48" cy="35.5" r="1" fill="#0b1018"/>
       </svg>
 
-      <div class="photo" id="photo">
+      <div class="photo" id="photo"><div class="tilt" id="tilt">
         <img id="phBase" alt="">
         <img id="phColor" alt="">
+        <div class="bubbles" id="bubbles"></div>
         <div class="phline" id="phLine"></div>
-      </div>
+        <div class="glare"></div>
+      </div></div>
       <div class="badge-pct num"><span id="pct">0%</span><small>funded</small></div>
     </div>
 
@@ -330,26 +370,26 @@
     </div>
   </section>
 
-  <div class="hl">
+  <div class="reveal hl">
     <div class="hcard left">
       <div class="hk">🎯 Still needed</div>
       <div class="hv num" id="sLeft">₹0</div>
       <div class="hs"><span id="sLeftUsd">$0</span> · <span id="sLeftPct">100%</span> of the goal left</div>
     </div>
     <div class="hcard rate">
-      <div class="hk">💱 1 USD = INR today</div>
+      <div class="hk">💱 1 USD = INR today <span class="live"><i></i>LIVE</span></div>
       <div class="hv num" id="sRate">₹—</div>
       <div class="hs"><span id="sRateChg"></span><span id="sRateDate">—</span></div>
     </div>
   </div>
-  <div class="pace">
+  <div class="reveal pace">
     <div class="pi">📅</div>
     <div><div class="pk">At this pace you'll get it by</div><div class="pv" id="sEta">—</div></div>
     <div class="pr"><div id="sAvg">need 2+ deposits</div><div id="sDeposits">0 deposits</div></div>
   </div>
 
   <div class="grid">
-    <div class="card">
+    <div class="reveal card">
       <h2>Add money
         <span class="seg"><button class="on" id="modeAdd">Save</button><button id="modeTake">Withdraw</button></span>
       </h2>
@@ -362,7 +402,7 @@
       <div class="hint" id="hint"></div>
     </div>
 
-    <div class="card rcpt">
+    <div class="reveal card rcpt">
       <h2>Price breakdown <button class="btn-s" id="editRate">✎ Edit rate</button></h2>
       <div class="line"><span>iPhone 18 Pro Max 256 GB</span><span class="num">$1,299.00</span></div>
       <div class="line"><span>Tax (9%)</span><span class="num">$116.91</span></div>
@@ -376,12 +416,12 @@
       <svg class="spark" id="spark" viewBox="0 0 300 56" preserveAspectRatio="none"></svg>
     </div>
 
-    <div class="card span2">
+    <div class="reveal card span2">
       <h2>Milestones <button class="btn-s" id="soundBtn">🔊 Sound on</button></h2>
       <div class="track" id="track"><div class="rail"><div class="fill" id="trackFill"></div></div></div>
     </div>
 
-    <div class="card span2">
+    <div class="reveal card span2">
       <h2>History <span id="histCount" style="letter-spacing:0;text-transform:none"></span></h2>
       <div class="list" id="list"></div>
     </div>
@@ -495,6 +535,7 @@
     $("ring").style.strokeDashoffset = 804.25 * (1 - pct / 100);
     const a = pct / 100 * Math.PI * 2, kn = $("knob");
     kn.setAttribute("cx", 150 + Math.cos(a) * 128); kn.setAttribute("cy", 150 + Math.sin(a) * 128); kn.style.opacity = pct > 0 ? 1 : 0;
+    $("bubbles").style.height = Math.max(0, pct - 1) + "%"; $("bubbles").style.setProperty("--h", Math.max(40, pct * 3) + "px");
     $("phColor").style.clipPath = `inset(${100 - pct}% 0 0 0)`; $("phLine").style.top = `calc(${100 - pct}% - 1px)`; $("phLine").style.opacity = pct > 0 && pct < 100 ? 1 : 0;
     $("liquid").setAttribute("transform", `translate(0,${200 - pct / 100 * 196 - (pct > 0 ? 4 : 0)})`);
 
@@ -622,6 +663,7 @@
     burst(btn.left + btn.width / 2, btn.top, Math.min(180, 60 + v / 40));
     const st = $("stage").getBoundingClientRect(); setTimeout(() => sparkle(st.left + st.width / 2, st.top + st.height / 2, st.width / 2.3), 350);
     const s = $("stage"); s.classList.remove("pulse"); void s.offsetWidth; s.classList.add("pulse");
+    setTimeout(() => { bump("sLeft"); bump("sSaved"); }, 300);
     chime(v); try { navigator.vibrate && navigator.vibrate([18, 40, 18]); } catch(e){}
     const [e, c] = CHEERS[Math.floor(Math.random() * CHEERS.length)];
     toast(L > 0 ? e : "🏁", L > 0 ? `${c}<br><b>+${inr(v)}</b> saved · only <b>${inr(L)}</b> to go` : `<b>That's the whole phone!</b>`);
@@ -741,6 +783,35 @@
       } catch(err){ toast("⚠️", "That file isn't a valid backup."); } };
     r.readAsText(f); e.target.value = "";
   });
+
+
+  // ---------- ambient effects ----------
+  (function bubbles(){ let h = ""; for (let i = 0; i < 9; i++) { const sz = 4 + Math.random() * 7;
+    h += `<i style="left:${5 + Math.random() * 88}%;width:${sz}px;height:${sz}px;--d:${3 + Math.random() * 3}s;--dl:${-Math.random() * 6}s;--sx:${(Math.random() - .5) * 24}px"></i>`; }
+    $("bubbles").innerHTML = h; })();
+  (function tilt(){
+    const t = $("tilt"), st = $("stage"); let idleT = null; t.classList.add("idle");
+    function apply(rx, ry){ t.classList.remove("idle"); t.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+      t.style.setProperty("--gx", (ry * 2.2) + "%"); t.style.setProperty("--gy", (-rx * 2.2) + "%");
+      clearTimeout(idleT); idleT = setTimeout(() => { t.style.transform = ""; t.classList.add("idle"); }, 2500); }
+    let pend = null;
+    function queue(rx, ry){ if (pend) { pend = [rx, ry]; return; } pend = [rx, ry]; requestAnimationFrame(() => { apply(pend[0], pend[1]); pend = null; }); }
+    st.addEventListener("pointermove", e => { const r = st.getBoundingClientRect();
+      queue(((e.clientY - r.top) / r.height - .5) * -18, ((e.clientX - r.left) / r.width - .5) * 22); });
+    st.addEventListener("pointerleave", () => { clearTimeout(idleT); t.style.transform = ""; t.classList.add("idle"); });
+    try { addEventListener("deviceorientation", e => { if (e.beta == null) return;
+      queue(Math.max(-12, Math.min(12, (e.beta - 45) * -.35)), Math.max(-14, Math.min(14, e.gamma * .45))); }); } catch(e){}
+  })();
+  (function reveal(){ const els = document.querySelectorAll(".reveal");
+    if (!("IntersectionObserver" in window)) { els.forEach(e => e.classList.add("in")); return; }
+    const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); } }), { threshold: .12 });
+    els.forEach((e, i) => { e.style.transitionDelay = (i % 3) * 70 + "ms"; io.observe(e); }); })();
+  document.addEventListener("pointerdown", e => { const b = e.target.closest(".save,.quick button,.btn-s,.phbtn"); if (!b) return;
+    const r = b.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2.2, sp = document.createElement("span"); sp.className = "ripple";
+    sp.style.cssText = `width:${d}px;height:${d}px;left:${e.clientX - r.left - d / 2}px;top:${e.clientY - r.top - d / 2}px`;
+    if (getComputedStyle(b).position === "static") b.style.position = "relative"; b.style.overflow = "hidden";
+    b.appendChild(sp); setTimeout(() => sp.remove(), 650); });
+  function bump(id){ const el = $(id); if (!el) return; el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
 
   // ---------- boot ----------
   lsLoad(); render(); hint(); initDb();
