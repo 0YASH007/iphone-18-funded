@@ -404,7 +404,7 @@
       <div class="hk">💱 1 USD = INR today</div>
       <div class="duo">
         <div class="col" id="colMarket">
-          <div class="ck">📈 Market <span class="live"><i></i>LIVE</span></div>
+          <div class="ck">📈 Market <span class="live"><i></i>AUTO</span></div>
           <div class="hv num" id="sRate">₹—</div>
           <div class="cs"><span id="sRateChg"></span><span id="sRateDate">—</span></div>
           <div class="use">🎯 Your target</div>
@@ -586,7 +586,7 @@
 
     // rate
     $("sRate").textContent = "₹" + state.rate.usdInr.toFixed(2);
-    $("sRateDate").textContent = state.rate.date ? fmtDate(state.rate.date) + (state.rate.source === "manual" ? " · your rate" : "") : "";
+    $("sRateDate").textContent = state.rate.date ? fmtDate(state.rate.date) + (state.rate.source === "manual" ? " · your rate" : state.rate.upd ? " · " + new Date(state.rate.upd).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" }) : "") : "";
     $("rateTxt").textContent = (basis === "mc" ? "💳 Mastercard · " : "") + "1 USD = ₹" + effRate().toFixed(2);
     $("mcRate").textContent = "₹" + MC.usdInr.toFixed(2); $("mcDate").textContent = MC.date ? "Rate of " + fmtDate(MC.date) : "";
     $("colMarket").classList.toggle("used", basis !== "mc"); $("colMc").classList.toggle("used", basis === "mc");
@@ -810,12 +810,13 @@
     const today = dayKey(Date.now());
     if (state.rate.source === "manual" && state.rate.date === today) return;   // respect today's manual rate
     let rate = null, source = "";
-    try { const j = await getJSON("https://open.er-api.com/v6/latest/USD"); if (j && j.rates && +j.rates.INR > 0) { rate = +j.rates.INR; source = "ExchangeRate-API"; } } catch(e){}
+    let upd = 0;
+    try { const j = await getJSON("https://open.er-api.com/v6/latest/USD"); if (j && j.rates && +j.rates.INR > 0) { rate = +j.rates.INR; source = "ExchangeRate-API"; upd = (+j.time_last_update_unix || 0) * 1000; } } catch(e){}
     if (!rate) try { const j = await getJSON("https://api.frankfurter.app/latest?from=USD&to=INR"); if (j && j.rates && +j.rates.INR > 0) { rate = +j.rates.INR; source = "ECB via Frankfurter"; } } catch(e){}
     if (!rate) { setSync(false, "Offline · last saved rate"); return; }
     rate = Math.round(rate * 100) / 100;
     const changed = rate !== state.rate.usdInr;
-    state.rate = { usdInr: rate, date: today, source };
+    state.rate = { usdInr: rate, date: today, source, upd };
     state.rates = (state.rates || []).filter(r => r.date !== today).concat([{ usdInr: rate, date: today }]).sort((a, b) => a.date < b.date ? -1 : 1).slice(-120);
     lsSave(); render(); hint(); setSync(true, "Live rate · " + source);
     if (changed) toast("💱", `Live rate updated: <b>1 USD = ₹${rate.toFixed(2)}</b>. Target: <b>${inr(target())}</b>.`);
