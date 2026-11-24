@@ -317,6 +317,9 @@
   .gold .gk i{font-style:normal;font-size:10.5px;color:rgba(255,236,200,.55)}
   .gold .gfun{margin-top:10px;font-size:12px;color:rgba(255,236,200,.75);text-align:center}
   .gold .gfun b{color:#fff6dc}
+
+  .duo .mcb{display:inline-flex;white-space:nowrap;letter-spacing:.03em;margin-top:8px;font-size:9px;background:#ffd77a;color:#3a2a06} .duo .mcb i{background:#3a2a06;animation:none}
+  .duo .mcb.wait{background:rgba(255,255,255,.15);color:#fff} .duo .mcb.wait i{background:#fff;animation:blink 1.2s infinite}
 </style>
 </head>
 <body>
@@ -451,6 +454,7 @@
           <div class="ck">💳 Mastercard</div>
           <div class="hv num" id="mcRate">₹—</div>
           <div class="cs"><span id="mcDate"></span></div>
+          <div><span class="live mcb" id="mcBadge"><i></i>DAILY</span></div>
           <div class="use">🎯 Your target</div>
         </div>
       </div>
@@ -643,7 +647,10 @@
     $("sRate").textContent = "₹" + state.rate.usdInr.toFixed(2);
     $("sRateDate").textContent = state.rate.source === "manual" ? "Your rate · " + fmtDate(state.rate.date) : refStamp() + (state.rate.source ? " · " + state.rate.source : "");
     $("rateTxt").textContent = (basis === "mc" ? "💳 Mastercard · " : "") + "1 USD = ₹" + effRate().toFixed(2);
-    $("mcRate").textContent = "₹" + MC.usdInr.toFixed(2); $("mcDate").textContent = refStamp() + (MC.date ? " · rate of " + fmtDate(MC.date) : "");
+    $("mcRate").textContent = "₹" + MC.usdInr.toFixed(2); $("mcDate").textContent = MC.date ? "Rate for " + fmtDate(MC.date) : "";
+    { const todayIST = new Date().toLocaleDateString("en-CA", { timeZone: IST }), y = new Date(Date.now() - 864e5).toLocaleDateString("en-CA", { timeZone: IST });
+      const latest = MC.date && MC.date >= y; const b = $("mcBadge");
+      b.innerHTML = latest ? "<i></i>UPDATED FOR THE DAY" : "<i></i>WAITING FOR NEW RATE"; b.classList.toggle("wait", !latest); }
     $("colMarket").classList.toggle("used", basis !== "mc"); $("colMc").classList.toggle("used", basis === "mc");
     { const rd = MC.usdInr - state.rate.usdInr; $("rateDiff").innerHTML = Math.abs(rd) < .005 ? "Both rates are the same today."
         : `Mastercard is <b>₹${Math.abs(rd).toFixed(2)}</b> per dollar ${rd < 0 ? "cheaper" : "costlier"} · <b>${inr(Math.abs(rd) * USD_TOTAL)}</b> on the phone`; }
