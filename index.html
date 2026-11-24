@@ -304,6 +304,19 @@
   .rft{margin-top:6px;text-align:center;font-size:11px;font-weight:600;letter-spacing:.02em;text-transform:none;color:rgba(235,245,255,.6)}
   .rf{margin-left:auto;width:30px;height:30px;border-radius:50%;border:1px solid rgba(143,208,255,.4);background:rgba(143,208,255,.1);color:#dff2ff;font-size:16px;line-height:1;cursor:pointer;display:grid;place-items:center}
   .rf.spin{animation:orbit .8s linear infinite}
+
+  .gold{margin-top:12px;padding:16px;border-radius:22px;position:relative;overflow:hidden;
+     background:linear-gradient(150deg,#2a2210,#15110a 70%);border:1px solid rgba(255,215,122,.35);box-shadow:0 14px 40px rgba(255,190,80,.12)}
+  .gold .gh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .gold .gh span{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#ffd77a}
+  .gold .gh small{font-size:11px;color:rgba(255,236,200,.65)}
+  .gold .gk{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+  .gold .gk>div{padding:10px;border-radius:14px;background:rgba(255,215,122,.06);border:1px solid rgba(255,215,122,.18);display:flex;flex-direction:column;gap:3px}
+  .gold .gk span{font-size:11px;font-weight:800;color:#ffd77a}
+  .gold .gk b{font-size:clamp(16px,4.6vw,20px);background:linear-gradient(90deg,#fff6dc,#ffd77a);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .gold .gk i{font-style:normal;font-size:10.5px;color:rgba(255,236,200,.55)}
+  .gold .gfun{margin-top:10px;font-size:12px;color:rgba(255,236,200,.75);text-align:center}
+  .gold .gfun b{color:#fff6dc}
 </style>
 </head>
 <body>
@@ -450,6 +463,15 @@
     <div><div class="pk">At this pace you'll get it by</div><div class="pv" id="sEta">—</div></div>
     <div class="pr"><div id="sAvg">need 2+ deposits</div><div id="sDeposits">0 deposits</div></div>
   </div>
+  <div class="reveal gold">
+    <div class="gh"><span>🪙 Gold today · 1 gram</span><small id="gMeta">India · for info</small></div>
+    <div class="gk">
+      <div><span>24K</span><b class="num" id="g24">₹—</b><i>99.9%</i></div>
+      <div><span>22K</span><b class="num" id="g22">₹—</b><i>91.6%</i></div>
+      <div><span>18K</span><b class="num" id="g18">₹—</b><i>75%</i></div>
+    </div>
+    <div class="gfun" id="gFun"></div>
+  </div>
 
   <div class="grid">
     <div class="reveal card">
@@ -538,6 +560,9 @@
   const usd = n => "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const dayKey = ts => { const d = new Date(ts); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); };
   const fmtDate = s => { const d = new Date(s + "T12:00:00"); return isNaN(d) ? s : d.toLocaleDateString("en-IN", { day: "numeric", month: "short" }); };
+  const IST = "Asia/Kolkata";
+  const istTime = t => new Date(t).toLocaleTimeString("en-IN", { timeZone: IST, hour: "numeric", minute: "2-digit" }) + " IST";
+  const istDate = t => new Date(t).toLocaleDateString("en-IN", { timeZone: IST, day: "numeric", month: "short" });
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 
   let state = { deposits: [], rate: FALLBACK_RATE, rates: [] };
@@ -614,7 +639,7 @@
 
     // rate
     $("sRate").textContent = "₹" + state.rate.usdInr.toFixed(2);
-    $("sRateDate").textContent = state.rate.date ? fmtDate(state.rate.date) + (state.rate.source === "manual" ? " · your rate" : state.rate.upd ? " · " + new Date(state.rate.upd).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" }) + (state.rate.source ? " · " + state.rate.source : "") : "") : "";
+    $("sRateDate").textContent = state.rate.date ? fmtDate(state.rate.date) + (state.rate.source === "manual" ? " · your rate" : state.rate.upd ? " · " + istTime(state.rate.upd) + (state.rate.source ? " · " + state.rate.source : "") : "") : "";
     $("rateTxt").textContent = (basis === "mc" ? "💳 Mastercard · " : "") + "1 USD = ₹" + effRate().toFixed(2);
     $("mcRate").textContent = "₹" + MC.usdInr.toFixed(2); $("mcDate").textContent = MC.date ? "Rate of " + fmtDate(MC.date) : "";
     $("colMarket").classList.toggle("used", basis !== "mc"); $("colMc").classList.toggle("used", basis === "mc");
@@ -643,7 +668,7 @@
       w = reached / (MILESTONES.length - 1) + (nx ? (pct - MILESTONES[reached].p) / (nx.p - MILESTONES[reached].p) / (MILESTONES.length - 1) : 0); }
     $("trackFill").style.width = Math.min(100, w * 100) + "%";
 
-    renderDelta(T); renderSpark(); renderList();
+    renderDelta(T); renderSpark(); renderList(); if (typeof renderGold === "function" && GOLD !== undefined) try { renderGold(); } catch(e){}
   }
 
   function renderDelta(T){
@@ -674,7 +699,7 @@
     $("histCount").textContent = items.length ? items.length + (items.length === 1 ? " entry" : " entries") : "";
     if (!items.length) { $("list").innerHTML = `<div class="empty"><div>🐷</div>No savings yet — your first deposit starts the countdown.</div>`; return; }
     $("list").innerHTML = items.map(d => { const neg = d.amount < 0, dt = new Date(d.ts);
-      const when = dt.toLocaleDateString("en-IN", { day: "numeric", month: "short" }) + " · " + dt.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });
+      const when = istDate(dt) + " · " + istTime(dt);
       return `<div class="item"><div class="av ${neg ? "neg" : ""}">${neg ? "↘" : "💰"}</div>
         <div class="m"><b>${esc(d.note || (neg ? "Withdrawal" : "Saved"))}</b><span>${when}</span></div>
         <div class="a num ${neg ? "neg" : ""}">${neg ? "−" : "+"}${inr(Math.abs(d.amount))}</div>
@@ -860,7 +885,7 @@
   async function refreshRates(manual){
     if (mode === "db" || refreshing) return; refreshing = true; $("rfBtn").classList.add("spin");
     quietNext = !!manual;
-    const ok = await fetchLiveRate(!!manual).catch(() => false); await fetchMastercard().catch(() => {});
+    const ok = await fetchLiveRate(!!manual).catch(() => false); await fetchMastercard().catch(() => {}); await fetchGold().catch(() => {});
     quietNext = false;
     refreshing = false; $("rfBtn").classList.remove("spin");
     if (ok !== false) { lastRefresh = Date.now(); showRefreshed(); }
@@ -868,7 +893,7 @@
       ? `Refreshed <b>${fullStamp(lastRefresh)}</b><br>📈 Market <b>₹${state.rate.usdInr.toFixed(2)}</b> <small>(${state.rate.source})</small> · 💳 Mastercard <b>₹${MC.usdInr.toFixed(2)}</b> <small>(rate of ${fmtDate(MC.date)})</small>`
       : "Couldn't reach the rate service. Showing the last saved rate.");
   }
-  function fullStamp(t){ const d = new Date(t); return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) + ", " + d.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", second: "2-digit" }); }
+  function fullStamp(t){ const d = new Date(t); return d.toLocaleDateString("en-IN", { timeZone: IST, day: "numeric", month: "short", year: "numeric" }) + ", " + d.toLocaleTimeString("en-IN", { timeZone: IST, hour: "numeric", minute: "2-digit", second: "2-digit" }) + " IST"; }
   function showRefreshed(){ if (!lastRefresh) return; $("rfTime").textContent = "Refreshed " + fullStamp(lastRefresh); }
   $("rfBtn").onclick = () => refreshRates(true);
   document.addEventListener("visibilitychange", () => { if (!document.hidden && Date.now() - lastRefresh > 60000) refreshRates(false); });
@@ -931,6 +956,21 @@
       if (j && +j.conversionRate > 0) return setMC({ usdInr: +j.conversionRate, date: j.fxDate }); } catch(e){}
     try { const j = await getJSON("mastercard.json?t=" + Date.now()); if (j) setMC(j); } catch(e){}
   }
+
+
+  // ---------- gold (for info) ----------
+  let GOLD = null;
+  try { GOLD = JSON.parse(localStorage.getItem(LS + "_gold") || "null"); } catch(e){}
+  function renderGold(){
+    if (!GOLD || !(+GOLD.k24 > 0)) { $("gMeta").textContent = "India · for info · loading…"; return; }
+    $("g24").textContent = inr(GOLD.k24); $("g22").textContent = inr(GOLD.k22); $("g18").textContent = inr(GOLD.k18);
+    const when = GOLD.time ? istDate(GOLD.time) + ", " + istTime(GOLD.time) : (GOLD.date ? fmtDate(GOLD.date) : "");
+    $("gMeta").textContent = "India · " + when + (GOLD.source ? " · " + GOLD.source : "");
+    $("gFun").innerHTML = `Your iPhone target ≈ <b>${(target() / GOLD.k24).toFixed(1)} g</b> of 24K gold`;
+  }
+  function setGold(g){ if (!g || !(+g.k24 > 0)) return; GOLD = { k24: +g.k24, k22: +g.k22, k18: +g.k18, date: g.date || "", time: g.time || "", source: g.source || "" };
+    try { localStorage.setItem(LS + "_gold", JSON.stringify(GOLD)); } catch(e){} renderGold(); }
+  async function fetchGold(){ try { const j = await getJSON("gold.json?t=" + Date.now()); setGold(j); } catch(e){} }
 
   // ---------- boot ----------
   lsLoad(); render(); hint(); initDb();
