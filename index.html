@@ -639,9 +639,9 @@
 
     // rate
     $("sRate").textContent = "₹" + state.rate.usdInr.toFixed(2);
-    $("sRateDate").textContent = state.rate.date ? fmtDate(state.rate.date) + (state.rate.source === "manual" ? " · your rate" : state.rate.upd ? " · " + istTime(state.rate.upd) + (state.rate.source ? " · " + state.rate.source : "") : "") : "";
+    $("sRateDate").textContent = state.rate.date ? fmtDate(state.rate.date) + (state.rate.source === "manual" ? " · your rate" : state.rate.upd ? " · rate of " + istTime(state.rate.upd) + (state.rate.source ? " · " + state.rate.source : "") : "") : "";
     $("rateTxt").textContent = (basis === "mc" ? "💳 Mastercard · " : "") + "1 USD = ₹" + effRate().toFixed(2);
-    $("mcRate").textContent = "₹" + MC.usdInr.toFixed(2); $("mcDate").textContent = MC.date ? "Rate of " + fmtDate(MC.date) : "";
+    $("mcRate").textContent = "₹" + MC.usdInr.toFixed(2); $("mcDate").textContent = MC.date ? "Rate of " + fmtDate(MC.date) + " · Mastercard publishes once a day" : "";
     $("colMarket").classList.toggle("used", basis !== "mc"); $("colMc").classList.toggle("used", basis === "mc");
     { const rd = MC.usdInr - state.rate.usdInr; $("rateDiff").innerHTML = Math.abs(rd) < .005 ? "Both rates are the same today."
         : `Mastercard is <b>₹${Math.abs(rd).toFixed(2)}</b> per dollar ${rd < 0 ? "cheaper" : "costlier"} · <b>${inr(Math.abs(rd) * USD_TOTAL)}</b> on the phone`; }
@@ -894,7 +894,7 @@
       : "Couldn't reach the rate service. Showing the last saved rate.");
   }
   function fullStamp(t){ const d = new Date(t); return d.toLocaleDateString("en-IN", { timeZone: IST, day: "numeric", month: "short", year: "numeric" }) + ", " + d.toLocaleTimeString("en-IN", { timeZone: IST, hour: "numeric", minute: "2-digit", second: "2-digit" }) + " IST"; }
-  function showRefreshed(){ if (!lastRefresh) return; $("rfTime").textContent = "Refreshed " + fullStamp(lastRefresh); }
+  function showRefreshed(){ if (!lastRefresh) return; $("rfTime").textContent = "🔄 Last refreshed: " + fullStamp(lastRefresh); }
   $("rfBtn").onclick = () => refreshRates(true);
   document.addEventListener("visibilitychange", () => { if (!document.hidden && Date.now() - lastRefresh > 60000) refreshRates(false); });
   addEventListener("pageshow", e => { if (e.persisted) refreshRates(false); });
