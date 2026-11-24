@@ -952,8 +952,6 @@
   $("bMarket").onclick = () => setBasis("market"); $("bMc").onclick = () => setBasis("mc");
   function setMC(m){ if (!m || !(+m.usdInr > 0)) return; MC = { usdInr: +(+m.usdInr).toFixed(2), date: m.date || "" }; try { localStorage.setItem(LS + "_mc", JSON.stringify(MC)); } catch(e){} render(); hint(); }
   async function fetchMastercard(){
-    try { const j = await getJSON("https://www.mastercard.com/marketingservices/public/mccom-services/currency-conversions/conversion-rates?exchange_date=0000-00-00&transaction_currency=USD&cardholder_billing_currency=INR&bank_fee=0&transaction_amount=1");
-      if (j && +j.conversionRate > 0) return setMC({ usdInr: +j.conversionRate, date: j.fxDate }); } catch(e){}
     try { const j = await getJSON("mastercard.json?t=" + Date.now()); if (j) setMC(j); } catch(e){}
   }
 
