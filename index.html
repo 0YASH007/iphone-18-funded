@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#040814">
+<meta http-equiv="Cache-Control" content="no-cache">
 <meta name="description" content="Savings tracker for iPhone 18 Pro Max 256GB Glacier Blue with live USD to INR conversion.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
 <title>iPhone 18 Pro Max Fund</title>
@@ -298,6 +299,11 @@
     footer{text-align:left}
   }
   @media(min-width:1024px) and (max-height:820px){ .stage{width:290px} .saved-big{margin-top:18px} }
+
+  .rfrow{display:flex;align-items:center;gap:8px}
+  .rft{margin-left:auto;font-size:10.5px;font-weight:600;letter-spacing:.02em;text-transform:none;color:rgba(235,245,255,.6)}
+  .rf{width:30px;height:30px;border-radius:50%;border:1px solid rgba(143,208,255,.4);background:rgba(143,208,255,.1);color:#dff2ff;font-size:16px;line-height:1;cursor:pointer;display:grid;place-items:center}
+  .rf.spin{animation:orbit .8s linear infinite}
 </style>
 </head>
 <body>
@@ -420,7 +426,7 @@
       <div class="hs"><span id="sLeftUsd">$0</span> · <span id="sLeftPct">100%</span> of the goal left</div>
     </div>
     <div class="hcard rate">
-      <div class="hk">💱 1 USD = INR today</div>
+      <div class="hk rfrow">💱 1 USD = INR today <span class="rft" id="rfTime"></span><button class="rf" id="rfBtn" title="Refresh rates" aria-label="Refresh rates">↻</button></div>
       <div class="duo">
         <div class="col" id="colMarket">
           <div class="ck">📈 Market <span class="live"><i></i>AUTO</span></div>
@@ -554,7 +560,7 @@
   async function initDb(){
     const timer = setTimeout(() => { if (mode !== "db") setSync(false, "This device only"); }, 10000);
     try { db = window.claude && window.claude.use ? await window.claude.use("db") : null; } catch(e){ db = null; }
-    if (!db) { clearTimeout(timer); setSync(false, "Saved on this device"); fetchLiveRate(); return; }
+    if (!db) { clearTimeout(timer); setSync(false, "Saved on this device"); refreshRates(false); return; }
     db.collection("deposits").orderBy("ts", "desc").onSnapshot(snap => {
       state.deposits = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       if (!snap.metadata.fromCache) { clearTimeout(timer); mode = "db"; setSync(true, "Synced"); }
@@ -829,20 +835,35 @@
     try { const r = await fetch(url, { signal: c.signal, cache: "no-store" }); if (!r.ok) throw 0; return await r.json(); } finally { clearTimeout(t); } }
   async function fetchLiveRate(){
     const today = dayKey(Date.now());
-    if (state.rate.source === "manual" && state.rate.date === today) return;   // respect today's manual rate
+    if (state.rate.source === "manual" && state.rate.date === today) return true;   // respect today's manual rate
     let rate = null, source = "";
     let upd = 0;
     try { const j = await getJSON("https://open.er-api.com/v6/latest/USD"); if (j && j.rates && +j.rates.INR > 0) { rate = +j.rates.INR; source = "ExchangeRate-API"; upd = (+j.time_last_update_unix || 0) * 1000; } } catch(e){}
     if (!rate) try { const j = await getJSON("https://api.frankfurter.app/latest?from=USD&to=INR"); if (j && j.rates && +j.rates.INR > 0) { rate = +j.rates.INR; source = "ECB via Frankfurter"; } } catch(e){}
-    if (!rate) { setSync(false, "Offline · last saved rate"); return; }
+    if (!rate) { setSync(false, "Offline · last saved rate"); return false; }
     rate = Math.round(rate * 100) / 100;
     const changed = rate !== state.rate.usdInr;
     state.rate = { usdInr: rate, date: today, source, upd };
     state.rates = (state.rates || []).filter(r => r.date !== today).concat([{ usdInr: rate, date: today }]).sort((a, b) => a.date < b.date ? -1 : 1).slice(-120);
     lsSave(); render(); hint(); setSync(true, "Auto rate · " + source);
-    if (changed) toast("💱", `Live rate updated: <b>1 USD = ₹${rate.toFixed(2)}</b>. Target: <b>${inr(target())}</b>.`);
+    if (changed && !quietNext) toast("💱", `Rate updated: <b>1 USD = ₹${rate.toFixed(2)}</b>. Target: <b>${inr(target())}</b>.`);
+    return true;
   }
-  document.addEventListener("visibilitychange", () => { if (!document.hidden && mode !== "db") fetchLiveRate(); });
+  let quietNext = false, lastRefresh = 0, refreshing = false;
+  async function refreshRates(manual){
+    if (mode === "db" || refreshing) return; refreshing = true; $("rfBtn").classList.add("spin");
+    const ok = await fetchLiveRate().catch(() => false); await fetchMastercard().catch(() => {});
+    refreshing = false; $("rfBtn").classList.remove("spin");
+    if (ok !== false) { lastRefresh = Date.now(); showRefreshed(); }
+    if (manual && ok !== false) toast("✅", `Rates refreshed · Market <b>₹${state.rate.usdInr.toFixed(2)}</b> · Mastercard <b>₹${MC.usdInr.toFixed(2)}</b>`);
+  }
+  function showRefreshed(){ if (!lastRefresh) return; const m = Math.round((Date.now() - lastRefresh) / 60000);
+    $("rfTime").textContent = m < 1 ? "refreshed just now" : "refreshed " + new Date(lastRefresh).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" }); }
+  $("rfBtn").onclick = () => refreshRates(true);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && Date.now() - lastRefresh > 60000) refreshRates(false); });
+  addEventListener("pageshow", e => { if (e.persisted) refreshRates(false); });
+  setInterval(() => { if (!document.hidden) refreshRates(false); }, 10 * 60 * 1000);
+  setInterval(showRefreshed, 30000);
 
   // ---------- backup / restore (data lives in this browser) ----------
   $("bkExport").onclick = () => {
@@ -900,7 +921,6 @@
       if (j && +j.conversionRate > 0) return setMC({ usdInr: +j.conversionRate, date: j.fxDate }); } catch(e){}
     try { const j = await getJSON("mastercard.json?t=" + Date.now()); if (j) setMC(j); } catch(e){}
   }
-  fetchMastercard();
 
   // ---------- boot ----------
   lsLoad(); render(); hint(); initDb();
