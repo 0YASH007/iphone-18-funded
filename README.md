@@ -8,6 +8,7 @@ A savings tracker for my next phone: **iPhone 18 Pro Max · 256 GB · Glacier Bl
 
 ## Features
 
+- **Market rate.** XE's mid-market rate is saved to `market.json` every hour (9 am – 6 pm IST); the page also checks free daily sources and shows whichever is newest.
 - **Live exchange rate.** Each time the page opens, it fetches the USD → INR rate from [ExchangeRate-API](https://www.exchangerate-api.com/), with the ECB rate via [Frankfurter](https://www.frankfurter.app/) as a backup, and recalculates the ₹ target.
 - **Mastercard rate.** Shown next to the market rate, with the target at both rates and a switch to set the target to either. `mastercard.json` is refreshed daily.
 - **Rate history.** A sparkline of past rates, plus "₹X cheaper/costlier than last time" with ▲/▼ badges.

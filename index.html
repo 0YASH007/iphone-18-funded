@@ -839,8 +839,9 @@
     if (!force && state.rate.source === "manual" && state.rate.date === today) return true;   // respect today's manual rate
     let rate = null, source = "";
     let upd = 0;
-    // Free browser-friendly sources publish once a day; use whichever is newest.
+    // XE rate saved hourly to market.json, plus free daily sources; use whichever is newest.
     const cands = [];
+    try { const j = await getJSON("market.json?t=" + Date.now()); if (j && +j.usdInr > 0) cands.push({ v: +j.usdInr, t: Date.parse(j.time) || 0, src: j.source || "XE" }); } catch(e){}
     try { const j = await getJSON("https://open.er-api.com/v6/latest/USD"); if (j && j.rates && +j.rates.INR > 0) cands.push({ v: +j.rates.INR, t: (+j.time_last_update_unix || 0) * 1000, src: "ExchangeRate-API" }); } catch(e){}
     try { const j = await getJSON("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json"); if (j && j.usd && +j.usd.inr > 0) cands.push({ v: +j.usd.inr, t: Date.parse(j.date + "T00:00:00Z") || 0, src: "Currency-API" }); } catch(e){}
     if (cands.length) { cands.sort((x, y) => y.t - x.t); rate = cands[0].v; source = cands[0].src; upd = cands[0].t; }
