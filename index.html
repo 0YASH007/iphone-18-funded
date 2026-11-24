@@ -429,7 +429,7 @@
       <div class="hk rfrow">💱 1 USD = INR today<button class="rf" id="rfBtn" title="Refresh rates" aria-label="Refresh rates">↻</button></div>
       <div class="duo">
         <div class="col" id="colMarket">
-          <div class="ck">📈 Market <span class="live"><i></i>LIVE</span></div>
+          <div class="ck">📈 Market <span class="live"><i></i>AUTO</span></div>
           <div class="hv num" id="sRate">₹—</div>
           <div class="cs"><span id="sRateChg"></span><span id="sRateDate">—</span></div>
           <div class="use">🎯 Your target</div>
@@ -839,11 +839,12 @@
     if (!force && state.rate.source === "manual" && state.rate.date === today) return true;   // respect today's manual rate
     let rate = null, source = "";
     let upd = 0;
-    // 1) Coinbase public rates: updated through the day
-    try { const j = await getJSON("https://api.coinbase.com/v2/exchange-rates?currency=USD"); const v = j && j.data && j.data.rates && +j.data.rates.INR;
-      if (v > 0) { rate = v; source = "Coinbase"; upd = Date.now(); } } catch(e){}
-    // 2) ExchangeRate-API (daily), 3) ECB via Frankfurter (daily)
-    if (!rate) try { const j = await getJSON("https://open.er-api.com/v6/latest/USD"); if (j && j.rates && +j.rates.INR > 0) { rate = +j.rates.INR; source = "ExchangeRate-API"; upd = (+j.time_last_update_unix || 0) * 1000; } } catch(e){}
+    // Free browser-friendly sources publish once a day; use whichever is newest.
+    const cands = [];
+    try { const j = await getJSON("https://open.er-api.com/v6/latest/USD"); if (j && j.rates && +j.rates.INR > 0) cands.push({ v: +j.rates.INR, t: (+j.time_last_update_unix || 0) * 1000, src: "ExchangeRate-API" }); } catch(e){}
+    try { const j = await getJSON("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json"); if (j && j.usd && +j.usd.inr > 0) cands.push({ v: +j.usd.inr, t: Date.parse(j.date + "T00:00:00Z") || 0, src: "Currency-API" }); } catch(e){}
+    if (cands.length) { cands.sort((x, y) => y.t - x.t); rate = cands[0].v; source = cands[0].src; upd = cands[0].t; }
+    // fallback: ECB via Frankfurter (daily)
     if (!rate) try { const j = await getJSON("https://api.frankfurter.app/latest?from=USD&to=INR"); if (j && j.rates && +j.rates.INR > 0) { rate = +j.rates.INR; source = "ECB via Frankfurter"; } } catch(e){}
     if (!rate) { setSync(false, "Offline · last saved rate"); return false; }
     rate = Math.round(rate * 100) / 100;
