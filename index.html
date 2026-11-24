@@ -561,6 +561,8 @@
   const dayKey = ts => { const d = new Date(ts); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); };
   const fmtDate = s => { const d = new Date(s + "T12:00:00"); return isNaN(d) ? s : d.toLocaleDateString("en-IN", { day: "numeric", month: "short" }); };
   const IST = "Asia/Kolkata";
+  var REFRESHED_AT = 0;   // when this page last refreshed the rates
+  const refStamp = () => REFRESHED_AT ? "Refreshed " + istDate(REFRESHED_AT) + ", " + istTime(REFRESHED_AT) : "Refreshing…";
   const istTime = t => new Date(t).toLocaleTimeString("en-IN", { timeZone: IST, hour: "numeric", minute: "2-digit" }) + " IST";
   const istDate = t => new Date(t).toLocaleDateString("en-IN", { timeZone: IST, day: "numeric", month: "short" });
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
@@ -639,9 +641,9 @@
 
     // rate
     $("sRate").textContent = "₹" + state.rate.usdInr.toFixed(2);
-    $("sRateDate").textContent = state.rate.date ? fmtDate(state.rate.date) + (state.rate.source === "manual" ? " · your rate" : state.rate.upd ? " · rate of " + istTime(state.rate.upd) + (state.rate.source ? " · " + state.rate.source : "") : "") : "";
+    $("sRateDate").textContent = state.rate.source === "manual" ? "Your rate · " + fmtDate(state.rate.date) : refStamp() + (state.rate.source ? " · " + state.rate.source : "");
     $("rateTxt").textContent = (basis === "mc" ? "💳 Mastercard · " : "") + "1 USD = ₹" + effRate().toFixed(2);
-    $("mcRate").textContent = "₹" + MC.usdInr.toFixed(2); $("mcDate").textContent = MC.date ? "Rate of " + fmtDate(MC.date) + " · Mastercard publishes once a day" : "";
+    $("mcRate").textContent = "₹" + MC.usdInr.toFixed(2); $("mcDate").textContent = refStamp() + (MC.date ? " · rate of " + fmtDate(MC.date) : "");
     $("colMarket").classList.toggle("used", basis !== "mc"); $("colMc").classList.toggle("used", basis === "mc");
     { const rd = MC.usdInr - state.rate.usdInr; $("rateDiff").innerHTML = Math.abs(rd) < .005 ? "Both rates are the same today."
         : `Mastercard is <b>₹${Math.abs(rd).toFixed(2)}</b> per dollar ${rd < 0 ? "cheaper" : "costlier"} · <b>${inr(Math.abs(rd) * USD_TOTAL)}</b> on the phone`; }
@@ -888,7 +890,7 @@
     const ok = await fetchLiveRate(!!manual).catch(() => false); await fetchMastercard().catch(() => {}); await fetchGold().catch(() => {});
     quietNext = false;
     refreshing = false; $("rfBtn").classList.remove("spin");
-    if (ok !== false) { lastRefresh = Date.now(); showRefreshed(); }
+    if (ok !== false) { lastRefresh = Date.now(); REFRESHED_AT = lastRefresh; render(); showRefreshed(); }
     if (manual) toast(ok !== false ? "✅" : "⚠️", ok !== false
       ? `Refreshed <b>${fullStamp(lastRefresh)}</b><br>📈 Market <b>₹${state.rate.usdInr.toFixed(2)}</b> <small>(${state.rate.source})</small> · 💳 Mastercard <b>₹${MC.usdInr.toFixed(2)}</b> <small>(rate of ${fmtDate(MC.date)})</small>`
       : "Couldn't reach the rate service. Showing the last saved rate.");
