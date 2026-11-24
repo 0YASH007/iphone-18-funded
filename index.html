@@ -281,6 +281,23 @@
   .duo .col.used .use{display:block}
   .duodiff{margin-top:10px;font-size:12px;color:rgba(235,245,255,.75);text-align:center}
   .duodiff b{color:#fff}
+
+  /* ---------- laptop / desktop layout ---------- */
+  .grid{align-items:start}
+  @media(min-width:1024px){
+    .wrap{max-width:1280px;padding:22px 32px 60px}
+    .layout{display:grid;grid-template-columns:minmax(380px,430px) minmax(0,1fr);gap:28px;align-items:start;margin-top:18px}
+    .lcol{position:sticky;top:18px;border-radius:30px;padding:8px 22px 28px;background:linear-gradient(170deg,#0f1f33,#08111f 75%);border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.45)}
+    .hero{padding:18px 0 0}
+    h1{font-size:38px}
+    .stage{width:340px}
+    .rcol .hl{margin-top:0}
+    .rcol .grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);margin-top:18px}
+    .rcol .pace{margin-top:14px}
+    .backup{justify-content:flex-start}
+    footer{text-align:left}
+  }
+  @media(min-width:1024px) and (max-height:820px){ .stage{width:290px} .saved-big{margin-top:18px} }
 </style>
 </head>
 <body>
@@ -293,6 +310,7 @@
     <div class="pill"><i class="dot" id="syncDot"></i><span id="syncTxt">Connecting…</span></div>
   </div>
 
+  <div class="layout"><div class="lcol">
   <section class="hero">
     <div class="eyebrow">Next upgrade</div>
     <h1>iPhone 18 Pro Max</h1>
@@ -393,6 +411,7 @@
       <div class="of">of <b class="num" id="target">₹—</b> · <span id="sSavedUsd">$0</span></div>
     </div>
   </section>
+  </div><div class="rcol">
 
   <div class="reveal hl">
     <div class="hcard left">
@@ -417,6 +436,7 @@
         </div>
       </div>
       <div class="duodiff" id="rateDiff"></div>
+    </div>
   </div>
   <div class="reveal pace">
     <div class="pi">📅</div>
@@ -469,6 +489,7 @@
     </div>
   </div>
 
+  </div></div>
   <div class="backup">
     <button class="phbtn" id="bkExport">💾 Backup</button>
     <span class="phbtn">📂 Restore<input type="file" accept="application/json,.json" id="bkFile" class="ovl" aria-label="Restore backup"></span>
@@ -818,7 +839,7 @@
     const changed = rate !== state.rate.usdInr;
     state.rate = { usdInr: rate, date: today, source, upd };
     state.rates = (state.rates || []).filter(r => r.date !== today).concat([{ usdInr: rate, date: today }]).sort((a, b) => a.date < b.date ? -1 : 1).slice(-120);
-    lsSave(); render(); hint(); setSync(true, "Live rate · " + source);
+    lsSave(); render(); hint(); setSync(true, "Auto rate · " + source);
     if (changed) toast("💱", `Live rate updated: <b>1 USD = ₹${rate.toFixed(2)}</b>. Target: <b>${inr(target())}</b>.`);
   }
   document.addEventListener("visibilitychange", () => { if (!document.hidden && mode !== "db") fetchLiveRate(); });
