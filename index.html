@@ -320,6 +320,10 @@
 
   .duo .mcb{display:inline-flex;white-space:nowrap;letter-spacing:.03em;margin-top:8px;font-size:9px;background:#ffd77a;color:#3a2a06} .duo .mcb i{background:#3a2a06;animation:none}
   .duo .mcb.wait{background:rgba(255,255,255,.15);color:#fff} .duo .mcb.wait i{background:#fff;animation:blink 1.2s infinite}
+
+  .gold .gh{align-items:center}
+  .gold-rf{border-color:rgba(255,215,122,.5)!important;background:rgba(255,215,122,.12)!important;color:#ffd77a!important}
+  .gold .gmeta{display:block;margin-top:4px;font-size:11px;color:rgba(255,236,200,.65)}
 </style>
 </head>
 <body>
@@ -468,7 +472,8 @@
     <div class="pr"><div id="sAvg">need 2+ deposits</div><div id="sDeposits">0 deposits</div></div>
   </div>
   <div class="reveal gold">
-    <div class="gh"><span>🪙 Gold today · 1 gram</span><small id="gMeta">India · for info</small></div>
+    <div class="gh"><span>🪙 Gold today · 1 gram</span><button class="rf gold-rf" id="gRfBtn" title="Refresh gold" aria-label="Refresh gold">↻</button></div>
+    <small class="gmeta" id="gMeta">India · for info</small>
     <div class="gk">
       <div><span>24K</span><b class="num" id="g24">₹—</b><i>99.9%</i></div>
       <div><span>22K</span><b class="num" id="g22">₹—</b><i>91.6%</i></div>
@@ -892,22 +897,23 @@
   }
   let quietNext = false, lastRefresh = 0, refreshing = false;
   async function refreshRates(manual){
-    if (mode === "db" || refreshing) return; refreshing = true; $("rfBtn").classList.add("spin");
+    if (mode === "db" || refreshing) return; refreshing = true; $("rfBtn").classList.add("spin"); $("gRfBtn").classList.add("spin");
     quietNext = !!manual;
     const ok = await fetchLiveRate(!!manual).catch(() => false); await fetchMastercard().catch(() => {}); await fetchGold().catch(() => {});
     quietNext = false;
-    refreshing = false; $("rfBtn").classList.remove("spin");
+    refreshing = false; $("rfBtn").classList.remove("spin"); $("gRfBtn").classList.remove("spin");
     if (ok !== false) { lastRefresh = Date.now(); REFRESHED_AT = lastRefresh; render(); showRefreshed(); }
     if (manual) toast(ok !== false ? "✅" : "⚠️", ok !== false
-      ? `Refreshed <b>${fullStamp(lastRefresh)}</b><br>📈 Market <b>₹${state.rate.usdInr.toFixed(2)}</b> <small>(${state.rate.source})</small> · 💳 Mastercard <b>₹${MC.usdInr.toFixed(2)}</b> <small>(rate of ${fmtDate(MC.date)})</small>`
+      ? `Refreshed <b>${fullStamp(lastRefresh)}</b><br>📈 Market <b>₹${state.rate.usdInr.toFixed(2)}</b> <small>(${state.rate.source})</small> · 💳 Mastercard <b>₹${MC.usdInr.toFixed(2)}</b>` + (GOLD ? ` · 🪙 24K <b>${inr(GOLD.k24)}</b>/g` : "")
       : "Couldn't reach the rate service. Showing the last saved rate.");
   }
   function fullStamp(t){ const d = new Date(t); return d.toLocaleDateString("en-IN", { timeZone: IST, day: "numeric", month: "short", year: "numeric" }) + ", " + d.toLocaleTimeString("en-IN", { timeZone: IST, hour: "numeric", minute: "2-digit", second: "2-digit" }) + " IST"; }
   function showRefreshed(){ if (!lastRefresh) return; $("rfTime").textContent = "🔄 Last refreshed: " + fullStamp(lastRefresh); }
   $("rfBtn").onclick = () => refreshRates(true);
-  document.addEventListener("visibilitychange", () => { if (!document.hidden && Date.now() - lastRefresh > 60000) refreshRates(false); });
+  setTimeout(() => { const g = $("gRfBtn"); if (g) g.onclick = () => refreshRates(true); }, 0);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && Date.now() - lastRefresh > 20000) refreshRates(false); });
   addEventListener("pageshow", e => { if (e.persisted) refreshRates(false); });
-  setInterval(() => { if (!document.hidden) refreshRates(false); }, 10 * 60 * 1000);
+  setInterval(() => { if (!document.hidden) refreshRates(false); }, 60 * 1000);
 
   // ---------- backup / restore (data lives in this browser) ----------
   $("bkExport").onclick = () => {
@@ -971,8 +977,7 @@
   function renderGold(){
     if (!GOLD || !(+GOLD.k24 > 0)) { $("gMeta").textContent = "India · for info · loading…"; return; }
     $("g24").textContent = inr(GOLD.k24); $("g22").textContent = inr(GOLD.k22); $("g18").textContent = inr(GOLD.k18);
-    const when = GOLD.time ? istDate(GOLD.time) + ", " + istTime(GOLD.time) : (GOLD.date ? fmtDate(GOLD.date) : "");
-    $("gMeta").textContent = "India · " + when + (GOLD.source ? " · " + GOLD.source : "");
+    $("gMeta").textContent = "India · " + refStamp() + (GOLD.source ? " · " + GOLD.source : "");
     $("gFun").innerHTML = `Your iPhone target ≈ <b>${(target() / GOLD.k24).toFixed(1)} g</b> of 24K gold`;
   }
   function setGold(g){ if (!g || !(+g.k24 > 0)) return; GOLD = { k24: +g.k24, k22: +g.k22, k18: +g.k18, date: g.date || "", time: g.time || "", source: g.source || "" };
