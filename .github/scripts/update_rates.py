@@ -1,4 +1,4 @@
-"""Fetch USD->INR rates and write market.json / mastercard.json.
+"""Fetch USD->INR rates and gold prices; write market.json, mastercard.json and gold.json.
 
 Runs in GitHub Actions. Uses plain requests that identify themselves as this bot.
 Each source is optional: if one fails, the old file is kept.
@@ -65,3 +65,21 @@ for d in (now.astimezone(IST).date(), now.astimezone(IST).date() - datetime.time
             break
     except Exception as e:
         print("Mastercard", d, "failed:", e)
+
+# Gold (India, per gram): Groww's gold-rate page, parsed from its text
+import re, html as _html
+try:
+    req = urllib.request.Request("https://groww.in/gold-rates", headers={**UA, "Accept": "text/html"})
+    with urllib.request.urlopen(req, timeout=25) as r:
+        page = r.read().decode("utf-8", "ignore")
+    text = re.sub(r"\s+", " ", _html.unescape(re.sub(r"<[^>]+>", " ", page)))
+    num = lambda k: float(re.search(r"₹\s*([\d,]+(?:\.\d+)?)\s*per gram for " + k + r" karat", text).group(1).replace(",", ""))
+    k24, k22, k18 = num("24"), num("22"), num("18")
+    if 3000 < k18 < k22 < k24 < 60000:
+        write("gold.json", {"k24": round(k24), "k22": round(k22), "k18": round(k18),
+                            "date": now.astimezone(IST).date().isoformat(),
+                            "time": now.strftime("%Y-%m-%dT%H:%M:%SZ"), "source": "Groww"})
+    else:
+        print("Gold values look wrong:", k24, k22, k18)
+except Exception as e:
+    print("Gold failed:", e)
