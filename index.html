@@ -355,6 +355,19 @@
   .rg-note{margin-top:10px;font-size:12px;color:var(--muted);text-align:center}
   .rg-note b{color:var(--ice)}
   @media(max-width:520px){.rg-rates input{font-size:15px}}
+
+  .tabs{display:flex;gap:6px;width:max-content;max-width:100%;margin:16px auto 0;padding:5px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
+  .tabs button{border:0;background:none;color:var(--muted);font:700 14px Sora,sans-serif;padding:10px 22px;border-radius:999px;cursor:pointer;transition:.2s}
+  .tabs button.on{background:linear-gradient(135deg,#f0faff,#8fd0ff);color:#04203a;box-shadow:0 6px 20px rgba(79,163,224,.35)}
+  .tabs button[data-v="ring"].on{background:linear-gradient(135deg,#fff3cf,#ffd77a);color:#3a2a06;box-shadow:0 6px 20px rgba(255,190,80,.3)}
+  .view[hidden]{display:none!important}
+  #v-ring{max-width:900px;margin:0 auto}
+  .rhero{text-align:center;padding:22px 0 18px}
+  .rhero h1{background:linear-gradient(180deg,#fff 10%,#ffe7a8 55%,#ffc54d);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .rh-total{font-size:clamp(36px,10vw,56px);font-weight:800;margin-top:10px;background:linear-gradient(90deg,#fff6dc,#ffd77a);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .rh-sub{font-size:13px;color:var(--muted);margin-top:4px}
+  #v-ring .card{animation:fadeup .5s ease}
+  @keyframes fadeup{from{opacity:0;transform:translateY(12px)}}
 </style>
 </head>
 <body>
@@ -366,6 +379,11 @@
     <div class="brand"><div class="logo">💎</div><div><small>Savings goal</small><b>Phone Fund</b></div></div>
     <div class="pill"><i class="dot" id="syncDot"></i><span id="syncTxt">Connecting…</span></div>
   </div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-v="iphone" class="on">📱 iPhone</button>
+    <button role="tab" data-v="ring">💍 Ring</button>
+  </nav>
+  <div class="view" id="v-iphone">
 
   <div class="layout"><div class="lcol">
   <section class="hero">
@@ -557,7 +575,22 @@
       <div class="list" id="list"></div>
     </div>
 
-    <div class="reveal card span2 ringcalc">
+  </div>
+
+  </div></div>
+  <div class="backup">
+    <button class="phbtn" id="bkExport">💾 Backup</button>
+    <span class="phbtn">📂 Restore<input type="file" accept="application/json,.json" id="bkFile" class="ovl" aria-label="Restore backup"></span>
+  </div>
+  </div>
+  <div class="view" id="v-ring" hidden>
+    <section class="rhero">
+      <div class="eyebrow">Wedding rings</div>
+      <h1>Yash &amp; Saloni</h1>
+      <div class="rh-total num" id="rhT">₹—</div>
+      <div class="rh-sub">18K gold · diamonds · making charges</div>
+    </section>
+    <div class="card ringcalc">
       <h2>💍 Rings <button class="btn-s" id="rgUseToday">Use today's 18K rate</button></h2>
       <div class="rg-rates">
         <label><span>18K gold / g</span><b>₹</b><input id="rgGold" inputmode="decimal"></label>
@@ -580,12 +613,6 @@
       </div>
       <div class="rg-note" id="rgNote"></div>
     </div>
-  </div>
-
-  </div></div>
-  <div class="backup">
-    <button class="phbtn" id="bkExport">💾 Backup</button>
-    <span class="phbtn">📂 Restore<input type="file" accept="application/json,.json" id="bkFile" class="ovl" aria-label="Restore backup"></span>
   </div>
   <footer>Target = $1,299 × 1.09 = $1,415.91, converted at the latest USD→INR rate (fetched live when you open the page).<br>Your bank or card may add a markup — tap “Edit rate” to use its exact rate.</footer>
 </div>
@@ -1059,6 +1086,7 @@
     set("rqYL", qfmt(r.yg)); set("rqSL", qfmt(r.sg)); set("rvYL", rfmt(yL)); set("rvSL", rfmt(sL)); set("rvTL", rfmt(yL + sL));
     set("rvYX", r.gst ? rfmt(yX) : "—"); set("rvSX", r.gst ? rfmt(sX) : "—"); set("rvTX", r.gst ? rfmt(yX + sX) : "—");
     set("rvY", "₹" + rfmt(yB + yX)); set("rvS", "₹" + rfmt(sB + sX)); set("rvT", "₹" + rfmt(yB + sB + yX + sX));
+    set("rhT", "₹" + rfmt(yB + sB + yX + sX));
     set("rsY", "₹" + rfmt(yB + yX)); set("rsS", "₹" + rfmt(sB + sX)); set("rsT", "₹" + rfmt(yB + sB + yX + sX));
     const tot = yB + sB + yX + sX, k18 = typeof GOLD !== "undefined" && GOLD && GOLD.k18;
     $("rgNote").innerHTML = (k18 ? `Today's 18K rate: <b>₹${rfmt(GOLD.k18)}/g</b> · ` : "") + `Rings = <b>${(tot / target() * 100).toFixed(0)}%</b> of the iPhone target`;
@@ -1070,6 +1098,18 @@
   $("rgUseToday").onclick = () => { if (typeof GOLD !== "undefined" && GOLD && GOLD.k18) { RING.gold = GOLD.k18; ringFill(); ringCalc(); ringSave();
     toast("🪙", `18K rate set to today's <b>₹${rfmt(GOLD.k18)}/g</b>.`); } else toast("⚠️", "Today's gold rate isn't loaded yet."); };
   ringFill(); setTimeout(ringCalc, 0);
+
+
+  // ---------- tabs ----------
+  function showView(v){ v = v === "ring" ? "ring" : "iphone";
+    $("v-iphone").hidden = v !== "iphone"; $("v-ring").hidden = v !== "ring";
+    document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.v === v));
+    if (location.hash.slice(1) !== v) try { history.replaceState(null, "", "#" + v); } catch(e){ location.hash = v; }
+    if (v === "iphone") document.querySelectorAll("#v-iphone .reveal").forEach(e => { const r = e.getBoundingClientRect(); if (r.top < innerHeight) e.classList.add("in"); });
+    window.scrollTo(0, 0); }
+  document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => showView(b.dataset.v));
+  addEventListener("hashchange", () => showView(location.hash.slice(1)));
+  showView(location.hash.slice(1));
 
   // ---------- boot ----------
   lsLoad(); render(); hint(); initDb();
