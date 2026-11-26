@@ -368,6 +368,30 @@
   .rh-sub{font-size:13px;color:var(--muted);margin-top:4px}
   #v-ring .card{animation:fadeup .5s ease}
   @keyframes fadeup{from{opacity:0;transform:translateY(12px)}}
+
+  .rg-rates{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  @media(max-width:560px){.rg-rates{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+  .rg-rates label.pt{background:rgba(220,230,245,.06);border-color:rgba(220,230,245,.25)} .rg-rates label.pt span{color:#dfe8f5}
+  .mt{display:inline-flex;padding:3px;border-radius:999px;background:rgba(0,0,0,.3);border:1px solid var(--line)}
+  .mt button{border:0;background:none;color:var(--muted);font:700 11.5px Sora,sans-serif;padding:6px 10px;border-radius:999px;cursor:pointer}
+  .mt button.on[data-m="gold"]{background:linear-gradient(135deg,#fff3cf,#ffd77a);color:#3a2a06}
+  .mt button.on[data-m="plat"]{background:linear-gradient(135deg,#ffffff,#c9d6e6);color:#1b2533}
+  .rg tr.metal td{text-align:center} .rg tr.metal td:first-child{text-align:left}
+  .rg-cmp{margin-top:12px;padding:14px;border-radius:18px;background:linear-gradient(135deg,rgba(255,215,122,.07),rgba(220,230,245,.07));border:1px solid var(--line)}
+  .vs-h{font-size:13px;font-weight:700;color:#fff} .vs-h small{display:block;font-size:11px;font-weight:500;color:var(--muted);margin-top:2px}
+  .vs{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+  .vs th,.vs td{padding:9px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  .vs th:first-child,.vs td:first-child{text-align:left;color:var(--muted);font-weight:600}
+  .vs th{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .vs th:nth-child(2){color:#ffd77a} .vs th:nth-child(3){color:#dfe8f5}
+  .vs td:nth-child(2),.vs td:nth-child(3){cursor:pointer;border-radius:10px}
+  .vs td.sel:nth-child(2){background:rgba(255,215,122,.16);color:#ffe7a8;font-weight:700}
+  .vs td.sel:nth-child(3){background:rgba(220,230,245,.16);color:#fff;font-weight:700}
+  .vs tr.t td{border-bottom:0;font-weight:800;color:#fff}
+  .vs td.sv{color:var(--good);font-weight:700}
+  .vs-f{margin-top:8px;font-size:11px;color:var(--muted);text-align:center}
+  .rg-cmp b{color:#fff} .rg-cmp .sv{color:var(--good);font-weight:700}
+  @media(max-width:420px){.vs{font-size:12px}.vs th,.vs td{padding:8px 5px}}
 </style>
 </head>
 <body>
@@ -588,22 +612,25 @@
       <div class="eyebrow">Wedding rings</div>
       <h1>Yash &amp; Saloni</h1>
       <div class="rh-total num" id="rhT">₹—</div>
-      <div class="rh-sub">18K gold · diamonds · making charges</div>
+      <div class="rh-sub">Gold or platinum · diamonds · making charges</div>
     </section>
     <div class="card ringcalc">
       <h2>💍 Rings <button class="btn-s" id="rgUseToday">Use today's 18K rate</button></h2>
       <div class="rg-rates">
         <label><span>18K gold / g</span><b>₹</b><input id="rgGold" inputmode="decimal"></label>
+        <label class="pt"><span>Platinum / g</span><b>₹</b><input id="rgPlat" inputmode="decimal"></label>
         <label><span>Diamond / ct</span><b>₹</b><input id="rgDia" inputmode="decimal"></label>
         <label><span>Labour / g</span><b>₹</b><input id="rgLab" inputmode="decimal"></label>
       </div>
       <div class="rg-sum"><div><span>Yash</span><b id="rsY">—</b></div><div><span>Saloni</span><b id="rsS">—</b></div><div class="t"><span>Total</span><b id="rsT">—</b></div></div>
+      <div class="rg-cmp" id="rgCmp"></div>
       <div class="rg-wrap">
         <table class="rg">
           <thead><tr><th></th><th colspan="2">Yash</th><th colspan="2">Saloni</th><th>Total</th></tr>
                  <tr class="sub"><th></th><th>Qty</th><th>Value</th><th>Qty</th><th>Value</th><th></th></tr></thead>
           <tbody>
-            <tr><td>Gold (g)</td><td><input id="rgYG" inputmode="decimal"></td><td id="rvYG"></td><td><input id="rgSG" inputmode="decimal"></td><td id="rvSG"></td><td id="rvTG"></td></tr>
+            <tr class="metal"><td>Metal</td><td colspan="2"><div class="mt" data-p="ym"><button data-m="gold">18K Gold</button><button data-m="plat">Platinum</button></div></td><td colspan="2"><div class="mt" data-p="sm"><button data-m="gold">18K Gold</button><button data-m="plat">Platinum</button></div></td><td></td></tr>
+            <tr><td id="rlMetal">Metal (g)</td><td><input id="rgYG" inputmode="decimal"></td><td id="rvYG"></td><td><input id="rgSG" inputmode="decimal"></td><td id="rvSG"></td><td id="rvTG"></td></tr>
             <tr><td>Diamond (ct)</td><td><input id="rgYD" inputmode="decimal"></td><td id="rvYD"></td><td><input id="rgSD" inputmode="decimal"></td><td id="rvSD"></td><td id="rvTD"></td></tr>
             <tr><td>Labour (g)</td><td class="ro" id="rqYL"></td><td id="rvYL"></td><td class="ro" id="rqSL"></td><td id="rvSL"></td><td id="rvTL"></td></tr>
             <tr class="gst"><td><label><input type="checkbox" id="rgGst"> GST 3%</label></td><td></td><td id="rvYX"></td><td></td><td id="rvSX"></td><td id="rvTX"></td></tr>
@@ -1069,16 +1096,30 @@
 
   // ---------- ring calculator ----------
   const RK = LS + "_ring";
-  const RING_DEFAULT = { gold: 9586, dia: 7500, lab: 1550, yg: 5, yd: 1, sg: 3.5, sd: 1.25, gst: false };
+  const RING_DEFAULT = { gold: 9586, plat: 5000, dia: 7500, lab: 1550, yg: 5, yd: 1, sg: 3.5, sd: 1.25, gst: false, ym: "gold", sm: "gold" };
   let RING = Object.assign({}, RING_DEFAULT);
   try { Object.assign(RING, JSON.parse(localStorage.getItem(RK) || "{}")); } catch(e){}
   const rnum = v => { const n = parseFloat(String(v).replace(/[^\d.]/g, "")); return isFinite(n) ? n : 0; };
   const rfmt = n => Math.round(n).toLocaleString("en-IN");
   const qfmt = n => (Math.round(n * 100) / 100).toFixed(2);
-  const RMAP = { rgGold: "gold", rgDia: "dia", rgLab: "lab", rgYG: "yg", rgYD: "yd", rgSG: "sg", rgSD: "sd" };
+  const RMAP = { rgGold: "gold", rgPlat: "plat", rgDia: "dia", rgLab: "lab", rgYG: "yg", rgYD: "yd", rgSG: "sg", rgSD: "sd" };
   function ringFill(){ for (const id in RMAP) { const el = $(id); if (document.activeElement !== el) el.value = id.startsWith("rgY") || id.startsWith("rgS") ? qfmt(RING[RMAP[id]]) : RING[RMAP[id]]; } $("rgGst").checked = !!RING.gst; }
   function ringCalc(){
-    const r = RING, yG = r.yg * r.gold, yD = r.yd * r.dia, yL = r.yg * r.lab, sG = r.sg * r.gold, sD = r.sd * r.dia, sL = r.sg * r.lab;
+    const r = RING, mr = m => m === "plat" ? r.plat : r.gold;
+    const yG = r.yg * mr(r.ym), yD = r.yd * r.dia, yL = r.yg * r.lab, sG = r.sg * mr(r.sm), sD = r.sd * r.dia, sL = r.sg * r.lab;
+    document.querySelectorAll(".mt").forEach(el => el.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.m === r[el.dataset.p])));
+    const mname = m => m === "plat" ? "Platinum" : "18K gold";
+    $("rlMetal").textContent = r.ym === r.sm ? mname(r.ym) + " (g)" : "Metal (g)";
+    const cost = (g, d, m) => (g * mr(m) + d * r.dia + g * r.lab) * (r.gst ? 1.03 : 1);
+    const yGo = cost(r.yg, r.yd, "gold"), yPt = cost(r.yg, r.yd, "plat"), sGo = cost(r.sg, r.sd, "gold"), sPt = cost(r.sg, r.sd, "plat");
+    const row = (who, go, pt, sel) => `<tr><td>${who}</td><td class="${sel === "gold" ? "sel" : ""}">₹${rfmt(go)}</td><td class="${sel === "plat" ? "sel" : ""}">₹${rfmt(pt)}</td><td class="sv">${go >= pt ? "₹" + rfmt(go - pt) : "costs ₹" + rfmt(pt - go) + " more"}</td></tr>`;
+    $("rgCmp").innerHTML = `<div class="vs-h">🥇 18K Gold vs 🤍 Platinum <small>same grams, diamonds and labour</small></div>
+      <table class="vs"><thead><tr><th></th><th>18K Gold</th><th>Platinum</th><th>Saves</th></tr></thead><tbody>
+      ${row("Yash", yGo, yPt, r.ym)}${row("Saloni", sGo, sPt, r.sm)}
+      <tr class="t"><td>Both rings</td><td>₹${rfmt(yGo + sGo)}</td><td>₹${rfmt(yPt + sPt)}</td><td class="sv">${yGo + sGo >= yPt + sPt ? "₹" + rfmt(yGo + sGo - yPt - sPt) : "costs ₹" + rfmt(yPt + sPt - yGo - sGo) + " more"}</td></tr>
+      </tbody></table><div class="vs-f">Highlighted = the metal selected for that ring above · tap a value to switch</div>`;
+    $("rgCmp").querySelectorAll("tbody tr:not(.t)").forEach((tr, i) => { const key = i ? "sm" : "ym";
+      tr.children[1].onclick = () => { RING[key] = "gold"; ringCalc(); ringSave(); }; tr.children[2].onclick = () => { RING[key] = "plat"; ringCalc(); ringSave(); }; });
     const yB = yG + yD + yL, sB = sG + sD + sL, g = r.gst ? .03 : 0, yX = yB * g, sX = sB * g;
     const set = (id, v) => $(id).textContent = v;
     set("rvYG", rfmt(yG)); set("rvSG", rfmt(sG)); set("rvTG", rfmt(yG + sG));
@@ -1094,6 +1135,7 @@
   function ringSave(){ try { localStorage.setItem(RK, JSON.stringify(RING)); } catch(e){} }
   for (const id in RMAP) $(id).addEventListener("input", () => { RING[RMAP[id]] = rnum($(id).value); ringCalc(); ringSave(); });
   for (const id in RMAP) $(id).addEventListener("blur", ringFill);
+  document.querySelectorAll(".mt button").forEach(b => b.addEventListener("click", () => { RING[b.parentElement.dataset.p] = b.dataset.m; ringCalc(); ringSave(); }));
   $("rgGst").addEventListener("change", () => { RING.gst = $("rgGst").checked; ringCalc(); ringSave(); });
   $("rgUseToday").onclick = () => { if (typeof GOLD !== "undefined" && GOLD && GOLD.k18) { RING.gold = GOLD.k18; ringFill(); ringCalc(); ringSave();
     toast("🪙", `18K rate set to today's <b>₹${rfmt(GOLD.k18)}/g</b>.`); } else toast("⚠️", "Today's gold rate isn't loaded yet."); };
