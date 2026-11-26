@@ -2,7 +2,8 @@ name: Update rates
 
 on:
   schedule:
-    - cron: "*/30 * * * *"   # every 30 minutes
+    # Off-peak minutes: GitHub often skips jobs scheduled at :00 / :30.
+    - cron: "7,22,37,52 * * * *"   # about every 15 minutes
   workflow_dispatch:
 
 permissions:
