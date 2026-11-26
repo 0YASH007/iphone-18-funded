@@ -398,6 +398,8 @@
   .gbtn.out{background:rgba(255,255,255,.06);color:var(--muted);padding:7px 11px;box-shadow:none;border-color:var(--line)}
   .gbtn[hidden]{display:none}
   @media(max-width:420px){.gbtn span{font-size:11.5px}.pill{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+  .item.dupe{border-color:rgba(255,215,122,.45);background:rgba(255,215,122,.06)}
+  .dtag{font-style:normal;font-weight:700;color:#ffd77a}
 </style>
 </head>
 <body>
@@ -692,6 +694,8 @@
   const dayKey = ts => { const d = new Date(ts); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); };
   const fmtDate = s => { const d = new Date(s + "T12:00:00"); return isNaN(d) ? s : d.toLocaleDateString("en-IN", { day: "numeric", month: "short" }); };
   const IST = "Asia/Kolkata";
+  const normNote = t => String(t || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const sameEntry = (a, b) => a.amount === b.amount && normNote(a.note) === normNote(b.note);
   var REFRESHED_AT = 0;   // when this page last refreshed the rates
   const refStamp = () => REFRESHED_AT ? "Refreshed " + istDate(REFRESHED_AT) + ", " + istTime(REFRESHED_AT) : "Refreshing…";
   const istTime = t => new Date(t).toLocaleTimeString("en-IN", { timeZone: IST, hour: "numeric", minute: "2-digit" }) + " IST";
@@ -836,14 +840,15 @@
     if (!items.length) { $("list").innerHTML = `<div class="empty"><div>🐷</div>No savings yet — your first deposit starts the countdown.</div>`; return; }
     $("list").innerHTML = items.map(d => { const neg = d.amount < 0, dt = new Date(d.ts);
       const when = istDate(dt) + " · " + istTime(dt);
-      return `<div class="item"><div class="av ${neg ? "neg" : ""}">${neg ? "↘" : "💰"}</div>
-        <div class="m"><b>${esc(d.note || (neg ? "Withdrawal" : "Saved"))}</b><span>${when}</span></div>
+      const rep = items.some(o => o !== d && sameEntry(o, d) && o.ts < d.ts);
+      return `<div class="item${rep ? " dupe" : ""}"><div class="av ${neg ? "neg" : ""}">${neg ? "↘" : "💰"}</div>
+        <div class="m"><b>${esc(d.note || (neg ? "Withdrawal" : "Saved"))}</b><span>${when}${rep ? ' · <em class="dtag">repeat?</em>' : ""}</span></div>
         <div class="a num ${neg ? "neg" : ""}">${neg ? "−" : "+"}${inr(Math.abs(d.amount))}</div>
         <button class="x" data-id="${esc(d.id)}" title="Remove">✕</button></div>`; }).join("");
   }
 
   // ---------- actions ----------
-  const amountEl = $("amount");
+  const amountEl = $("amount"); let dupArmed = null;
   amountEl.addEventListener("input", () => { amountEl.value = amountEl.value.replace(/[^\d]/g, "").slice(0, 8); hint(); });
   document.querySelectorAll(".quick button").forEach(b => b.addEventListener("click", () => {
     amountEl.value = String((parseInt(amountEl.value || "0", 10) || 0) + +b.dataset.v); hint(); tick(); }));
@@ -862,6 +867,13 @@
     const v = parseInt(amountEl.value || "0", 10);
     if (!v || v <= 0) { shake(amountEl.parentElement); return; }
     const entry = { amount: sign * v, note: $("note").value.trim().slice(0, 60), ts: Date.now() };
+    const dup = state.deposits.find(d => sameEntry(d, entry));
+    if (dup && !(dupArmed && dupArmed.key === entry.amount + "|" + normNote(entry.note) && Date.now() - dupArmed.t < 8000)) {
+      dupArmed = { key: entry.amount + "|" + normNote(entry.note), t: Date.now() };
+      $("hint").innerHTML = `⚠️ Same as your entry on <b>${istDate(dup.ts)}</b> (${dup.amount < 0 ? "−" : "+"}${inr(Math.abs(dup.amount))}${dup.note ? " · " + esc(dup.note) : ""}). Tap <b>Save</b> again within 8 s to add it anyway.`;
+      shake($("saveBtn")); return;
+    }
+    dupArmed = null;
     const T0 = target(), before = Math.max(0, saved());
     const pB = before / T0 * 100, pA = Math.max(0, before + sign * v) / T0 * 100;
     const crossed = sign > 0 ? MILESTONES.filter(m => pB < m.p && pA >= m.p).pop() : null;
@@ -1201,9 +1213,12 @@
       setSync(true, "Syncing…");
       try {
         // first sign-in on this device: upload anything that only exists here
-        const snap = await col().get(); const have = new Set(snap.docs.map(d => d.id));
-        const batch = fs.batch(); let n = 0;
-        state.deposits.forEach(d => { const id = d.id || ("l" + d.ts); if (!have.has(id)) { batch.set(col().doc(id), { amount: d.amount, note: d.note || "", ts: d.ts }); n++; } });
+        const snap = await col().get(); const have = new Set(snap.docs.map(d => d.id)); const cloudRows = snap.docs.map(d => d.data());
+        const batch = fs.batch(); let n = 0, skipped = 0;
+        state.deposits.forEach(d => { const id = d.id || ("l" + d.ts); if (have.has(id)) return;
+          if (cloudRows.some(c => sameEntry(c, d))) { skipped++; return; }
+          batch.set(col().doc(id), { amount: d.amount, note: d.note || "", ts: d.ts }); cloudRows.push(d); n++; });
+        if (skipped) toast("🧹", `Skipped <b>${skipped}</b> entr${skipped > 1 ? "ies" : "y"} already in your synced savings.`);
         if (n) await batch.commit();
         for (const [k, val] of [["ring", RING], ["prefs", { basis }]]) { const s = await setDoc(k).get(); if (!s.exists) await setDoc(k).set(JSON.parse(JSON.stringify(val))); }
         const ph = await setDoc("photo").get(); let lp = null; try { lp = localStorage.getItem(PK); } catch(e){}
