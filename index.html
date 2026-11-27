@@ -716,7 +716,8 @@
   // ---------- storage ----------
   const LS = "iphone18fund_v1";
   function lsLoad(){ try { const s = JSON.parse(localStorage.getItem(LS) || "null"); if (s) { state.deposits = s.deposits || []; if (s.rate) state.rate = s.rate; if (s.rates) state.rates = s.rates; } } catch(e){} }
-  function lsSave(){ try { localStorage.setItem(LS, JSON.stringify({ deposits: state.deposits, rate: state.rate, rates: state.rates })); } catch(e){} }
+  function lsSave(){ try { localStorage.setItem(LS, JSON.stringify({ deposits: state.deposits, rate: state.rate, rates: state.rates }));
+    if (state.deposits.length) localStorage.setItem(LS + "_bak", JSON.stringify({ at: Date.now(), deposits: state.deposits })); } catch(e){} }
   try { soundOn = localStorage.getItem(LS + "_sound") !== "off"; } catch(e){}
   function setSync(ok, txt){ $("syncDot").className = "dot" + (ok ? " ok" : ""); $("syncTxt").textContent = txt; }
 
@@ -837,7 +838,11 @@
   function renderList(){
     const items = [...state.deposits].sort((a, b) => b.ts - a.ts);
     $("histCount").textContent = items.length ? items.length + (items.length === 1 ? " entry" : " entries") : "";
-    if (!items.length) { $("list").innerHTML = `<div class="empty"><div>🐷</div>No savings yet — your first deposit starts the countdown.</div>`; return; }
+    if (!items.length) { let bak = null; try { bak = JSON.parse(localStorage.getItem(LS + "_bak") || "null"); } catch(e){}
+      $("list").innerHTML = `<div class="empty"><div>🐷</div>No savings yet — your first deposit starts the countdown.` +
+        (bak && bak.deposits && bak.deposits.length ? `<br><button class="btn-s" id="bakRestore" style="margin-top:12px">↺ Restore ${bak.deposits.length} saved entr${bak.deposits.length > 1 ? "ies" : "y"} from ${istDate(bak.at)}</button>` : "") + `</div>`;
+      const rb = $("bakRestore"); if (rb) rb.onclick = () => { bak.deposits.forEach(d => { if (!state.deposits.some(x => x.id === d.id)) { state.deposits.push(d); CLOUD.putDeposit(d); } }); lsSave(); render(); hint(); toast("✅", `Restored <b>${bak.deposits.length}</b> entries.`); };
+      return; }
     $("list").innerHTML = items.map(d => { const neg = d.amount < 0, dt = new Date(d.ts);
       const when = istDate(dt) + " · " + istTime(dt);
       const rep = items.some(o => o !== d && sameEntry(o, d) && o.ts < d.ts);
@@ -1226,10 +1231,11 @@
         if (n) toast("☁️", `Uploaded <b>${n}</b> saving${n > 1 ? "s" : ""} from this device.`);
       } catch(e){ setSync(false, "Sync error · saved on this device"); toast("⚠️", "Couldn't sync: " + (e.code || e.message)); return; }
 
-      unsubs.push(col().onSnapshot(snap => {
+      unsubs.push(col().onSnapshot({ includeMetadataChanges: false }, snap => {
+        if (snap.metadata.fromCache && snap.empty) return;   // wait for the server before showing an empty list
         state.deposits = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => b.ts - a.ts);
         lsSave(); render(); hint();
-        setSync(true, "Synced · " + (u.displayName || u.email || "Google").split(" ")[0]);
+        setSync(true, "Synced · " + (u.email || u.displayName || "Google"));
       }, () => setSync(false, "Sync paused · saved on this device")));
       unsubs.push(setDoc("ring").onSnapshot(s => { if (!s.exists || s.metadata.hasPendingWrites) return;
         applying = true; RING = Object.assign({}, RING_DEFAULT, s.data()); try { localStorage.setItem(RK, JSON.stringify(RING)); } catch(e){}
